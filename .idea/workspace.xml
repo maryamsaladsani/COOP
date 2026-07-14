@@ -4,28 +4,76 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cd04865d-7652-4dea-8392-2277140fcd10" name="Changes" comment=" Visual Identity &amp; Brand Guidelines: This document was prepared by co-op trainees as part of an internal training project. It is intended for internal reference only and does not represent an official Saudi Energy corporate deliverable, policy, or brand standard. The work falls outside the scope of formal employee responsibilities.">
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/package-lock.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/public/favicon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/public/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/public/logo192.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/public/logo512.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/public/manifest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/public/robots.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/App.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/App.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/App.test.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/index.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/logo.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/reportWebVitals.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CoopApp/src/setupTests.js" afterDir="false" />
+    <list default="true" id="cd04865d-7652-4dea-8392-2277140fcd10" name="Changes" comment="Testing a React App">
+      <change afterPath="$PROJECT_DIR$/.agents/skills/design-taste-frontend/SKILL.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.agents/skills/frontend-design/LICENSE.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.agents/skills/frontend-design/SKILL.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.claude/skills/design-taste-frontend" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/public/assets/coopLogo.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/App.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/App.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/.Rhistory" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Button.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Button.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Footer.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Footer.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Logo.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Logo.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/PublicHeader.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/PublicHeader.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/RequireAuth.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/auth/AuthShell.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/auth/AuthShell.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/FormBanner.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/PasswordField.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/PasswordStrengthMeter.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/SelectField.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/TextField.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/DevelopedBy.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/DevelopedBy.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/Hero.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/Hero.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/RoleFlow.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/RoleFlow.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/StageFlowPreview.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/StageFlowPreview.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhatIsCoop.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhatIsCoop.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhyCoop.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhyCoop.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/context/AuthContext.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/data/mockAuth.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/index.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/AppHome.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/AppHome.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/ForgotPasswordPage.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/ForgotPasswordPage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/LandingPage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignInPage.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignInPage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignUpPage.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignUpPage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/styles/.Rhistory" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/utils/validation.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/public/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/public/logo192.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/public/logo512.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/public/manifest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/public/robots.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/public/robots.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/App.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/App.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/App.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/index.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/logo.svg" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/logo.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/reportWebVitals.js" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/reportWebVitals.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoopApp/src/setupTests.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,12 +109,14 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/memealadsani/Desktop/maryam_code/COOP&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -74,7 +124,7 @@
     &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.javascript.prettier&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -94,7 +144,15 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1783836299654</updated>
-      <workItem from="1783836301715" duration="6585000" />
+      <workItem from="1783836301715" duration="12066000" />
+      <workItem from="1783929451278" duration="2192000" />
+      <workItem from="1783934387621" duration="2084000" />
+      <workItem from="1783938466474" duration="20000" />
+      <workItem from="1783938492089" duration="24000" />
+      <workItem from="1783938525654" duration="32000" />
+      <workItem from="1783945375919" duration="1870000" />
+      <workItem from="1784013049094" duration="16000" />
+      <workItem from="1784013082996" duration="308000" />
     </task>
     <task id="LOCAL-00001" summary="Test Push">
       <option name="closed" value="true" />
@@ -128,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783843000831</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Testing a React App">
+      <option name="closed" value="true" />
+      <created>1783853570545</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1783853570545</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -138,6 +204,11 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Test Push" />
     <MESSAGE value=" Visual Identity &amp; Brand Guidelines: This document was prepared by co-op trainees as part of an internal training project. It is intended for internal reference only and does not represent an official Saudi Energy corporate deliverable, policy, or brand standard. The work falls outside the scope of formal employee responsibilities." />
-    <option name="LAST_COMMIT_MESSAGE" value=" Visual Identity &amp; Brand Guidelines: This document was prepared by co-op trainees as part of an internal training project. It is intended for internal reference only and does not represent an official Saudi Energy corporate deliverable, policy, or brand standard. The work falls outside the scope of formal employee responsibilities." />
+    <MESSAGE value="Testing a React App" />
+    <option name="LAST_COMMIT_MESSAGE" value="Testing a React App" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
