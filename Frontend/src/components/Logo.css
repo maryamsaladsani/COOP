@@ -1,0 +1,10 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.logo__mark {
+  display: block;
+  width: auto;
+}

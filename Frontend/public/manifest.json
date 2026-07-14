@@ -1,0 +1,15 @@
+{
+  "short_name": "COOP",
+  "name": "COOP - Coordinated Onboarding & Operations Platform",
+  "icons": [
+    {
+      "src": "assets/coopLogo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#001f5e",
+  "background_color": "#ffffff"
+}

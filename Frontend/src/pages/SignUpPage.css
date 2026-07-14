@@ -1,0 +1,15 @@
+.sign-up__banner {
+  margin-bottom: var(--space-5);
+}
+
+.sign-up__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--space-5);
+}
+
+@media (max-width: 560px) {
+  .sign-up__grid {
+    grid-template-columns: 1fr;
+  }
+}
