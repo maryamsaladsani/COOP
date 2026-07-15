@@ -1,0 +1,106 @@
+.hero-slide {
+  position: relative;
+  min-height: 620px;
+  display: grid;
+  grid-template-columns: 1fr minmax(380px, 620px);
+  grid-template-areas: 'visual text';
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  overflow: hidden;
+  background: linear-gradient(
+    100deg,
+    var(--grad-green) -10%,
+    var(--grad-light) 16%,
+    var(--grad-mid) 42%,
+    var(--grad-dark) 74%,
+    #00133d 106%
+  );
+}
+
+.hero-slide::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, transparent 42%, rgba(0, 10, 35, 0.32) 64%, rgba(0, 10, 35, 0.58) 100%);
+  pointer-events: none;
+}
+
+.hero-slide__visual {
+  grid-area: visual;
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) 0 64px clamp(16px, 4vw, 48px);
+}
+
+.hero-slide__text {
+  grid-area: text;
+  position: relative;
+  z-index: 1;
+  padding: var(--space-10) clamp(24px, 6vw, 72px) var(--space-10) 0;
+}
+
+.hero-slide__headline {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(32px, 4.8vw, 68px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.hero-slide__subhead {
+  margin: 0 0 var(--space-6);
+  max-width: 44ch;
+  font-size: 17px;
+  line-height: 1.55;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.hero-slide__body {
+  margin: 0 0 var(--space-7);
+  max-width: 46ch;
+  font-size: 16px;
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.hero-slide__cta {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .hero-slide {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'text' 'visual';
+    min-height: auto;
+    gap: 0;
+  }
+
+  .hero-slide::after {
+    background: linear-gradient(180deg, rgba(0, 10, 35, 0.55) 0%, transparent 42%);
+  }
+
+  .hero-slide__text {
+    padding: 56px clamp(20px, 6vw, 40px) 32px;
+  }
+
+  .hero-slide__visual {
+    padding: 8px clamp(16px, 5vw, 40px) 72px;
+  }
+
+  .hero-slide__headline {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-slide__text {
+    padding: 44px var(--space-5) 24px;
+  }
+}
