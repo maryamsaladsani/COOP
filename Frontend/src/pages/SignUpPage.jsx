@@ -17,12 +17,13 @@ const ROLE_OPTIONS = [
   { value: 'coordinator', label: 'Training Coordinator' },
 ];
 
-const DIVISION_OPTIONS = DIVISIONS.map((division) => ({ value: division, label: division }));
+//const DIVISION_OPTIONS = DIVISIONS.map((division) => ({ value: division, label: division }));
 
 const INITIAL_VALUES = {
   role: '',
   username: '',
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -35,7 +36,8 @@ const INITIAL_VALUES = {
 const RULES = {
   role: (value) => (isRequired(value) ? null : 'Select your role.'),
   username: (value) => (isRequired(value) ? null : 'Choose a username.'),
-  name: (value) => (isRequired(value) ? null : 'Enter your full name.'),
+  firstName: (value) => (isRequired(value) ? null : 'Enter your first name.'),
+  lastName: (value) => (isRequired(value) ? null : 'Enter your last name.'),
   email: (value) => {
     if (!isRequired(value)) return 'Enter your Saudi Energy email.';
     if (!isValidEmail(value)) return 'Enter a valid email address.';
@@ -87,8 +89,8 @@ function SignUpPage() {
 
   return (
     <AuthShell
-      title="Create a staff account"
-      subtitle="For HR and Training Coordinator staff. Trainees receive their account from HR, they don't sign up here."
+      title="Create a new account"
+      subtitle="For HR and Training Coordinator staff."
       width="lg"
       footer={
         <span>
@@ -123,20 +125,29 @@ function SignUpPage() {
             error={errors.username}
           />
           <TextField
-            label="Full name"
-            name="name"
-            autoComplete="name"
+            label="First name"
+            name="firstName"
+            autoComplete="given-name"
             required
-            value={values.name}
-            onChange={handleChange('name')}
-            error={errors.name}
+            value={values.firstName}
+            onChange={handleChange('firstName')}
+            error={errors.firstName}
+          />
+          <TextField
+            label="Last name"
+            name="lastName"
+            autoComplete="given-name"
+            required
+            value={values.lastName}
+            onChange={handleChange('lastName')}
+            error={errors.lastName}
           />
           <TextField
             label="Company email"
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="you@saudienergy.com"
+            placeholder="example@se.com.sa"
             required
             value={values.email}
             onChange={handleChange('email')}
@@ -145,7 +156,8 @@ function SignUpPage() {
           <TextField
             label="Saudi Energy employee ID"
             name="employeeId"
-            placeholder="SE-00000"
+            placeholder="e.g. C-000000"
+            maxLength={15}
             required
             value={values.employeeId}
             onChange={handleChange('employeeId')}
@@ -159,16 +171,16 @@ function SignUpPage() {
             onChange={handleChange('department')}
             error={errors.department}
           />
-          <SelectField
-            label="Division"
-            name="division"
-            options={DIVISION_OPTIONS}
-            placeholder="Select your division"
-            required
-            value={values.division}
-            onChange={handleChange('division')}
-            error={errors.division}
-          />
+          <TextField
+  label="Division"
+  name="division"
+  placeholder="Enter your division"
+  required
+  value={values.division}
+  onChange={handleChange('division')}
+  error={errors.division}
+/>
+        
           <TextField
             label="Company role"
             name="companyRole"
