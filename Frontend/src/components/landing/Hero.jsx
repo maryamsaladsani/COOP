@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import Button from '../Button';
-import StageFlowPreview from './StageFlowPreview';
 import './Hero.css';
 
 function Hero() {
@@ -20,9 +19,6 @@ function Hero() {
               </Button>
             </Link>
           </div>
-        </div>
-        <div className="hero__visual">
-          <StageFlowPreview />
         </div>
       </div>
     </section>
