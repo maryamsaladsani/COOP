@@ -48,6 +48,7 @@
   box-shadow: 0 1px 2px rgba(0, 31, 94, 0.14), 0 8px 20px -8px rgba(0, 128, 255, 0.55);
 }
 
+
 .btn--primary:hover:not(:disabled) {
   filter: brightness(1.06);
   box-shadow: 0 1px 2px rgba(0, 31, 94, 0.16), 0 10px 26px -8px rgba(0, 128, 255, 0.6);
@@ -67,7 +68,7 @@
 .btn--ghost {
   color: var(--text-on-brand);
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
+  /*box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);*/
 }
 
 .btn--ghost:hover:not(:disabled) {

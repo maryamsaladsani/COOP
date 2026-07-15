@@ -20,7 +20,7 @@ function HeroSlide({ headingLevel = 'h2', headline, subhead, body, cta, visual }
         {body && <p className="hero-slide__body">{body}</p>}
         {cta && (
           <Link to={cta.to} className="hero-slide__cta">
-            <Button variant="primary" size="sm">
+            <Button variant="ghost" size="md">
               {cta.label}
               <ArrowRightIcon />
             </Button>

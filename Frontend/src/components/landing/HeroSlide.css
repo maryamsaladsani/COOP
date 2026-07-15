@@ -1,6 +1,6 @@
 .hero-slide {
   position: relative;
-  min-height: 620px;
+  min-height: 600px;
   display: grid;
   grid-template-columns: 1fr minmax(380px, 620px);
   grid-template-areas: 'visual text';
@@ -62,7 +62,7 @@
 }
 
 .hero-slide__body {
-  margin: 0 0 var(--space-7);
+  margin: 0 0 var(--space-6);
   max-width: 46ch;
   font-size: 16px;
   line-height: 1.62;
@@ -70,6 +70,7 @@
 }
 
 .hero-slide__cta {
+  padding-top: 5px;
   display: inline-flex;
   text-decoration: none;
 }
