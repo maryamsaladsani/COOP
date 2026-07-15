@@ -45,9 +45,9 @@
   gap: var(--space-3);
 }
 
-.hero__visual {
-  min-width: 0;
-}
+/*.hero__visual {*/
+/*  min-width: 0;*/
+/*}*/
 
 @media (max-width: 900px) {
   .hero__inner {

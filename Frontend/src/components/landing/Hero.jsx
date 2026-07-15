@@ -14,7 +14,7 @@ function Hero() {
           </p>
           <div className="hero__actions">
             <Link to="/signin">
-              <Button variant="primary" size="lg">
+              <Button variant="primary" size="md">
                 Sign in
               </Button>
             </Link>
