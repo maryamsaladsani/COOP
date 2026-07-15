@@ -36,11 +36,6 @@
   font-size: 14.5px;
 }
 
-.btn--lg {
-  height: 52px;
-  padding: 0 var(--space-8);
-  font-size: 15.5px;
-}
 
 .btn--full {
   width: 100%;
