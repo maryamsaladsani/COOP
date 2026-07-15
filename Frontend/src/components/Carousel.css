@@ -1,0 +1,63 @@
+.carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel:focus-visible {
+  outline: none;
+}
+
+.carousel__track {
+  display: flex;
+  width: 100%;
+  transition-property: transform;
+  transition-timing-function: var(--ease-in-out);
+  will-change: transform;
+}
+
+.carousel__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.carousel__dots {
+  position: absolute;
+  left: var(--space-6);
+  bottom: var(--space-6);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carousel__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.42);
+  cursor: pointer;
+  transition: width 220ms var(--ease-out), background 220ms var(--ease-out);
+}
+
+.carousel__dot:hover {
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.carousel__dot:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.carousel__dot--active {
+  width: 26px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+@media (max-width: 640px) {
+  .carousel__dots {
+    left: var(--space-4);
+    bottom: var(--space-4);
+  }
+}
