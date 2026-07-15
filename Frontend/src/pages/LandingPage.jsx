@@ -1,16 +1,12 @@
 import PublicHeader from '../components/PublicHeader';
 import Footer from '../components/Footer';
-import Hero from '../components/landing/Hero';
-import WhatIsCoop from '../components/landing/WhatIsCoop';
-import WhyCoop from '../components/landing/WhyCoop';
+import HeroCarousel from '../components/landing/HeroCarousel';
 
 function LandingPage() {
   return (
     <div className="landing-page">
       <PublicHeader />
-      <Hero />
-      <WhatIsCoop />
-      <WhyCoop />
+      <HeroCarousel />
       <Footer />
     </div>
   );

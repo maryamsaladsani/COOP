@@ -1,0 +1,57 @@
+.intro-visual {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  overflow: visible;
+}
+
+.intro-visual__link {
+  stroke: rgba(255, 255, 255, 0.32);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.intro-visual__hub {
+  fill: var(--grad-green);
+  opacity: 0.9;
+  animation: intro-visual-pulse 2.6s var(--ease-in-out) infinite;
+}
+
+.intro-visual__node circle {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.5;
+}
+
+.intro-visual__node path,
+.intro-visual__node rect {
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.intro-visual__node--sm circle {
+  fill: rgba(50, 194, 255, 0.1);
+}
+
+.intro-visual__node--md circle {
+  fill: rgba(0, 255, 134, 0.1);
+}
+
+@keyframes intro-visual-pulse {
+  0%,
+  100% {
+    r: 4;
+    opacity: 0.9;
+  }
+  50% {
+    r: 6;
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 900px) {
+  .intro-visual {
+    max-width: 300px;
+  }
+}
