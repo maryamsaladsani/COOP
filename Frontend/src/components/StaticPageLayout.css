@@ -1,0 +1,41 @@
+.static-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.static-page__main {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+  width: 100%;
+}
+
+.static-page__title {
+  margin: 0 0 var(--space-6);
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.static-page__body {
+  color: var(--text-secondary);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+
+.static-page__body p {
+  margin: 0 0 var(--space-5);
+}
+
+.static-page__body p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .static-page__main {
+    padding: var(--space-8) var(--space-4);
+  }
+}
