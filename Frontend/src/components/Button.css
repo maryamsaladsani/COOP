@@ -105,6 +105,12 @@
   opacity: 0.85;
 }
 
+.btn__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 @keyframes btn-spin {
   to {
     transform: rotate(360deg);
