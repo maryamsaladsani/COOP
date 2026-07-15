@@ -18,7 +18,7 @@
   margin: 0 auto;
   padding: var(--space-12) var(--space-6) var(--space-12);
   display: grid;
-  grid-template-columns: minmax(360px, 460px) 1fr;
+  grid-template-columns: minmax(500px, 650px) 1fr;
   align-items: center;
   gap: var(--space-10);
 }
@@ -33,7 +33,7 @@
 }
 
 .hero__subtext {
-  margin: 0 0 var(--space-7);
+  margin: 0 0 var(--space-6);
   max-width: 42ch;
   font-size: 15.5px;
   line-height: 1.6;
@@ -42,12 +42,9 @@
 
 .hero__actions {
   display: flex;
+  justify-content: flex-start;
   gap: var(--space-3);
 }
-
-/*.hero__visual {*/
-/*  min-width: 0;*/
-/*}*/
 
 @media (max-width: 900px) {
   .hero__inner {
