@@ -1,29 +1,101 @@
 .site-footer {
+  /*background: var(--surface-card);*/
+  /*background-color: #001f5e;*/
+  /*background: #E6E8EB;*/
+  background: #F2F3F5;
   border-top: 1px solid var(--border-subtle);
-  background: var(--surface-card);
 }
 
-.site-footer__inner {
+.site-footer__main {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: var(--space-8) var(--space-6);
+  padding: 36px var(--space-8) 28px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  align-items: flex-start;
+  gap: var(--space-10);
   flex-wrap: wrap;
 }
 
-.site-footer__meta {
+.site-footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 320px;
+}
+
+.site-footer__nav {
+  min-width: 160px;
+}
+
+.site-footer__nav-title {
+  margin: 0 0 var(--space-4);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.site-footer__nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.site-footer__nav-list a {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 140ms var(--ease-out);
+}
+
+.site-footer__nav-list a:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.site-footer__bottom {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.site-footer__bottom-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.site-footer__copyright,
+.site-footer__credit {
   margin: 0;
   font-size: 12.5px;
   color: var(--text-tertiary);
 }
 
+@media (max-width: 768px) {
+  .site-footer__main {
+    padding: 48px var(--space-5) 40px;
+    gap: var(--space-8);
+  }
+}
+
 @media (max-width: 640px) {
-  .site-footer__inner {
-    padding: var(--space-6) var(--space-4);
+  .site-footer__main {
     flex-direction: column;
-    align-items: flex-start;
+  }
+
+  .site-footer__bottom-inner {
+    padding: var(--space-4) var(--space-5);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
   }
 }
