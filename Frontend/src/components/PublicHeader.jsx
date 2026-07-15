@@ -7,7 +7,7 @@ function PublicHeader() {
   return (
     <header className="public-header">
       <div className="public-header__inner">
-        <Logo height={26} />
+        <Logo height={35} />
         <Link to="/signin">
           <Button variant="primary" size="sm">
             Sign in
