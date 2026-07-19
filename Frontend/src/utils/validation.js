@@ -33,6 +33,36 @@ export function isPasswordStrongEnough(value) {
   return value.length >= 8 && getPasswordScore(value) >= 2;
 }
 
+const DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx'];
+const IMAGE_TYPE_RE = /^image\//;
+const IBAN_RE = /^SA\d{2}[A-Z0-9]{16,20}$/i;
+const SAUDI_NATIONAL_ID_RE = /^[12]\d{9}$/;
+
+export function isDocumentFile(file) {
+  if (!file) return false;
+  const name = file.name?.toLowerCase() || '';
+  return DOCUMENT_EXTENSIONS.some((ext) => name.endsWith(ext));
+}
+
+export function isImageFile(file) {
+  if (!file) return false;
+  if (file.type) return IMAGE_TYPE_RE.test(file.type);
+  return /\.(png|jpe?g|webp|heic)$/i.test(file.name || '');
+}
+
+export function isValidIBAN(value) {
+  return IBAN_RE.test(String(value).trim().replace(/\s+/g, ''));
+}
+
+export function isValidSaudiNationalId(value) {
+  return SAUDI_NATIONAL_ID_RE.test(String(value).trim());
+}
+
+export function isValidGPA(value) {
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0 && num <= 5;
+}
+
 export function runValidators(values, rules) {
   const errors = {};
   Object.entries(rules).forEach(([field, validate]) => {
