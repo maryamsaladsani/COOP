@@ -10,6 +10,7 @@ import FormBanner from '../components/form/FormBanner';
 import Button from '../components/Button';
 import { usePublicApplication } from '../data/DataContext';
 import { REFERRAL_SOURCES, BLOOD_TYPES } from '../data/mockData';
+import {NATIONALITY_OPTIONS} from "../data/countries";
 import {
   isRequired,
   isValidEmail,
@@ -169,7 +170,15 @@ function ApplicationPage() {
                 <TextField label="Phone" name="phone" autoComplete="tel" required placeholder="+966 5X XXX XXXX" value={values.phone} onChange={handleChange('phone')} error={errors.phone} />
                 <TextField label="Birth date" name="birthDate" type="date" required value={values.birthDate} onChange={handleChange('birthDate')} error={errors.birthDate} />
                 <TextField label="Personal email" name="personalEmail" type="email" autoComplete="email" required value={values.personalEmail} onChange={handleChange('personalEmail')} error={errors.personalEmail} />
-                <TextField label="Nationality" name="nationality" required value={values.nationality} onChange={handleChange('nationality')} error={errors.nationality} />
+                <SelectField
+                    label="Nationality"
+                    name="nationality"
+                    required
+                    placeholder="Saudi Arabia"
+                    options={NATIONALITY_OPTIONS.map((c) => ({ value: c.name, label: c.name }))}                    value={values.nationality}
+                    onChange={handleChange('nationality')}
+                    error={errors.nationality}
+                />
                 <TextField label="National ID" name="nationalId" required value={values.nationalId} onChange={handleChange('nationalId')} error={errors.nationalId} />
                 <SelectField
                   label="Blood type"
