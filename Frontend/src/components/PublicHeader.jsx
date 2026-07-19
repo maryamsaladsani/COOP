@@ -8,11 +8,16 @@ function PublicHeader() {
     <header className="public-header">
       <div className="public-header__inner">
         <Logo height={35} />
-        <Link to="/signin">
-          <Button variant="primary" size="sm">
-            Sign in
-          </Button>
-        </Link>
+        <div className="public-header__actions">
+          <Link to="/apply" className="public-header__apply">
+            Apply for training
+          </Link>
+          <Link to="/signin">
+            <Button variant="primary" size="sm">
+              Sign in
+            </Button>
+          </Link>
+        </div>
       </div>
     </header>
   );

@@ -4,6 +4,7 @@ import './Footer.css';
 
 const QUICK_LINKS = [
   { label: 'Home', to: '/' },
+  { label: 'Apply for Training', to: '/apply' },
   { label: 'Sign In', to: '/signin' },
   { label: 'Privacy Notice', to: '/privacy-notice' },
   { label: 'Help & Support', to: '/help' },

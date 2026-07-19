@@ -68,6 +68,29 @@
   box-shadow: 0 0 0 3px rgba(255, 49, 49, 0.14);
 }
 
+.textarea-input {
+  min-height: 88px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-standard);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  resize: vertical;
+  outline: none;
+  transition: border-color 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+
+.textarea-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.textarea-input:focus {
+  border-color: var(--grad-mid);
+  box-shadow: 0 0 0 3px rgba(0, 128, 255, 0.14);
+}
+
 .select-input {
   appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1L6 6L11 1' stroke='%239BA2AF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -226,6 +249,53 @@
 .form-status--info {
   background: var(--status-progress-bg);
   color: var(--status-progress-fg);
+}
+
+.file-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 44px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-standard);
+  background: var(--surface-sunken);
+}
+
+.file-input-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  box-shadow: 0 0 0 1px var(--border-standard);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.file-input-wrap:focus-within {
+  border-color: var(--grad-mid);
+  box-shadow: 0 0 0 3px rgba(0, 128, 255, 0.14);
+}
+
+.file-input-name {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .form-status__icon {

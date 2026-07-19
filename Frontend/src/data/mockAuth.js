@@ -9,6 +9,7 @@ const users = [
   { username: 'lama.trainee', password: 'Onboard#1', role: 'student', name: 'Lama Al-Harbi' },
   { username: 'noura.hr', password: 'Hr-Access9', role: 'hr', name: 'Noura Al-Shammari' },
   { username: 'faisal.coord', password: 'Coord-Flow7', role: 'coordinator', name: 'Faisal Al-Dosari' },
+  { username: 'huda.coord', password: 'Coord-Flow7', role: 'coordinator', name: 'Huda Al-Rashid' },
 ];
 
 function delay(value) {
@@ -37,6 +38,17 @@ export function confirmPasswordReset(code) {
     return fail('That code is not valid. Check your email and try again.');
   }
   return delay({ reset: true });
+}
+
+export function usernameExists(username) {
+  return users.some((user) => user.username.toLowerCase() === String(username).trim().toLowerCase());
+}
+
+// Used only by HR's "accept application" action (REQ-16): auto-creates the
+// trainee's COOP login the moment they're accepted, mirroring what the real
+// backend will do server-side.
+export function registerTrainee({ username, password, name }) {
+  users.push({ username, password, role: 'student', name });
 }
 
 export function signUp(payload) {

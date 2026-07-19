@@ -8,7 +8,6 @@ import Button from '../components/Button';
 import FormBanner from '../components/form/FormBanner';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../data/mockAuth';
-import { DIVISIONS } from '../data/mockData';
 import { isRequired, isValidEmail, isPasswordStrongEnough, runValidators } from '../utils/validation';
 import './SignUpPage.css';
 
@@ -16,8 +15,6 @@ const ROLE_OPTIONS = [
   { value: 'hr', label: 'HR' },
   { value: 'coordinator', label: 'Training Coordinator' },
 ];
-
-//const DIVISION_OPTIONS = DIVISIONS.map((division) => ({ value: division, label: division }));
 
 const INITIAL_VALUES = {
   role: '',
