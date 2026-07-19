@@ -32,6 +32,7 @@ const INITIAL_VALUES = {
   universityName: '',
   college: '',
   major: '',
+  gpaScale: '',
   gpa: '',
   startDate: '',
   endDate: '',
@@ -59,7 +60,12 @@ const RULES = {
   universityName: (v) => (isRequired(v) ? null : 'Enter your university name.'),
   college: (v) => (isRequired(v) ? null : 'Enter your college.'),
   major: (v) => (isRequired(v) ? null : 'Enter your major.'),
-  gpa: (v) => (isValidGPA(v) ? null : 'Enter a GPA between 0 and 5.'),
+  gpaScale: (v) => (isRequired(v) ? null : 'Select whether your GPA is out of 4 or 5.'),
+  gpa: (v, all) => {if (!isRequired(v)) return 'Enter your GPA.'; const gpa = Number(v);
+    const max = Number(all.gpaScale);
+    if (gpa < 0 || gpa > max) { return `Enter a GPA between 0 and ${max}.`; }
+    return null; },
+  //gpa: (v) => (isValidGPA(v) ? null : 'Enter a GPA between 0 and 5.'),
   startDate: (v) => (isRequired(v) ? null : 'Enter a start date.'),
   endDate: (v) => (isRequired(v) ? null : 'Enter an end date.'),
   duration: (v) => (isRequired(v) ? null : 'Enter the training duration.'),
@@ -199,7 +205,35 @@ function ApplicationPage() {
                 <TextField label="University name" name="universityName" required value={values.universityName} onChange={handleChange('universityName')} error={errors.universityName} />
                 <TextField label="College" name="college" required value={values.college} onChange={handleChange('college')} error={errors.college} />
                 <TextField label="Major" name="major" required value={values.major} onChange={handleChange('major')} error={errors.major} />
-                <TextField label="GPA" name="gpa" type="number" step="0.01" min="0" max="5" required value={values.gpa} onChange={handleChange('gpa')} error={errors.gpa} />
+                <SelectField label="GPA scale" name="gpaScale"
+  placeholder="Select"
+  options={[
+    { value: '4', label: 'Out of 4' },
+    { value: '5', label: 'Out of 5' },
+  ]}
+  required
+  value={values.gpaScale}
+  onChange={handleChange('gpaScale')} error={errors.gpaScale}
+/>
+
+<TextField
+  label="GPA"
+  name="gpa"
+  type="number"
+  step="0.01"
+  min="0"
+  max={values.gpaScale || undefined}
+  placeholder={
+    values.gpaScale
+      ? `Enter GPA out of ${values.gpaScale}`
+      : 'Select GPA scale first'
+  }
+  disabled={!values.gpaScale}
+  required
+  value={values.gpa}
+  onChange={handleChange('gpa')}
+  error={errors.gpa}
+/>
                 <TextField label="Duration" name="duration" required placeholder="e.g. 6 months" value={values.duration} onChange={handleChange('duration')} error={errors.duration} />
                 <TextField label="Start date" name="startDate" type="date" required value={values.startDate} onChange={handleChange('startDate')} error={errors.startDate} />
                 <TextField label="End date" name="endDate" type="date" required value={values.endDate} onChange={handleChange('endDate')} error={errors.endDate} />
