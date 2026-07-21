@@ -176,6 +176,7 @@ function ApplicationPage() {
                 <TextField label="Phone" name="phone" autoComplete="tel" required placeholder="+966 5X XXX XXXX" value={values.phone} onChange={handleChange('phone')} error={errors.phone} />
                 <TextField label="Birth date" name="birthDate" type="date" required value={values.birthDate} onChange={handleChange('birthDate')} error={errors.birthDate} />
                 <TextField label="Personal email" name="personalEmail" type="email" autoComplete="email" required value={values.personalEmail} onChange={handleChange('personalEmail')} error={errors.personalEmail} />
+                <TextField label="Nationality" name="nationality" required value={values.nationality} onChange={handleChange('nationality')} error={errors.nationality} />
                 <SelectField
                     label="Nationality"
                     name="nationality"
@@ -215,37 +216,37 @@ function ApplicationPage() {
                 <TextField label="College" name="college" required value={values.college} onChange={handleChange('college')} error={errors.college} />
                 <TextField label="Major" name="major" required value={values.major} onChange={handleChange('major')} error={errors.major} />
                 <SelectField label="GPA scale" name="gpaScale"
-  placeholder="Select"
-  options={[
-    { value: '4', label: 'Out of 4' },
-    { value: '5', label: 'Out of 5' },
-  ]}
-  required
-  value={values.gpaScale}
-  onChange={handleChange('gpaScale')} error={errors.gpaScale}
-/>
+  placeholder="Select"     
+               options={[
+                    { value: '4', label: 'Out of 4' },
+                    { value: '5', label: 'Out of 5' },
+                  ]} 
+                  required
+                  value={values.gpaScale}
+                  onChange={handleChange('gpaScale')} error={errors.gpaScale}
+                />
 
-<TextField
-  label="GPA"
-  name="gpa"
-  type="number"
-  step="0.01"
-  min="0"
-  max={values.gpaScale || undefined}
-  placeholder={
-    values.gpaScale
-      ? `Enter GPA out of ${values.gpaScale}`
-      : 'Select GPA scale first'
-  }
-  disabled={!values.gpaScale}
-  required
-  value={values.gpa}
-  onChange={handleChange('gpa')}
-  error={errors.gpa}
-/>
+                <TextField
+                  label="GPA"
+                  name="gpa"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max={values.gpaScale || undefined}
+                  placeholder={
+                    values.gpaScale
+                      ? `Enter GPA out of ${values.gpaScale}`
+                      : 'Select GPA scale first'
+                  }
+                  disabled={!values.gpaScale}
+                  required
+                  value={values.gpa}
+                  onChange={handleChange('gpa')}
+                  error={errors.gpa}
+                />
                 <TextField label="Duration" name="duration" required placeholder="e.g. 6 months" value={values.duration} onChange={handleChange('duration')} error={errors.duration} />
                 <TextField label="Start date" name="startDate" type="date" required value={values.startDate} onChange={handleChange('startDate')} error={errors.startDate} />
-                <TextField label="End date" name="endDate" type="date" required value={values.endDate} onChange={handleChange('endDate')} error={errors.endDate} />
+                <TextField label="End date" name="endDate" type="date" required value={values.endDate} onChange={handleChange('endDate')} error={errors.endDate} min={values.startDate} />
               </div>
             </SectionCard>
 
