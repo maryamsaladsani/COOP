@@ -1,14 +1,11 @@
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
-import { HomeIcon, DocumentIcon, SunriseIcon, PeopleIcon } from '../../components/dashboard/navIcons';
+import TRAINEE_NAV_ITEMS from './traineeNavItems';
+import { PeopleIcon } from '../../components/dashboard/navIcons';
 import { DeskIcon, CardIcon, AccountIcon } from '../../components/dashboard/trackIcons';
 import './TraineeDashboard.css';
 
-const NAV_ITEMS = [
-  { to: '/app/trainee', label: 'Dashboard', icon: <HomeIcon />, end: true },
-  { to: '/app/trainee/contract', label: 'Contract', icon: <DocumentIcon /> },
-  { to: '/app/trainee/first-day', label: 'First day', icon: <SunriseIcon /> },
-];
+
 
 // Structure only — copy is placeholder until HR/Comms provides the final
 // orientation content (REQ-06).
@@ -21,7 +18,7 @@ const SECTIONS = [
 
 function TraineeFirstDayPage() {
   return (
-    <DashboardShell navItems={NAV_ITEMS}>
+    <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
       <div className="trainee-dash">
         <div className="trainee-dash__intro">
           <h1>Your first day in Saudi Energy</h1>

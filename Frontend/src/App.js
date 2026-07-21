@@ -12,6 +12,7 @@ import PrivacyNoticePage from './pages/PrivacyNoticePage';
 import HelpSupportPage from './pages/HelpSupportPage';
 import ApplicationPage from './pages/ApplicationPage';
 import RoleHome from './pages/RoleHome';
+import TraineeCertificatePage from './pages/trainee/TraineeCertificatePage';
 import TraineeDashboardPage from './pages/trainee/TraineeDashboardPage';
 import TraineeContractPage from './pages/trainee/TraineeContractPage';
 import TraineeFirstDayPage from './pages/trainee/TraineeFirstDayPage';
@@ -66,6 +67,15 @@ function App() {
                 element={
                   <RequireRole role="student">
                     <TraineeFirstDayPage />
+                  </RequireRole>
+                }
+              />
+              
+              <Route
+                path="/app/trainee/certificate"
+                element={
+                  <RequireRole role="student">
+                    <TraineeCertificatePage />
                   </RequireRole>
                 }
               />

@@ -16,7 +16,7 @@ import {
   isValidEmail,
   isValidIBAN,
   isValidSaudiNationalId,
-  isValidGPA,
+  //isValidGPA,
   isDocumentFile,
   isImageFile,
   runValidators,
@@ -216,8 +216,8 @@ function ApplicationPage() {
                 <TextField label="College" name="college" required value={values.college} onChange={handleChange('college')} error={errors.college} />
                 <TextField label="Major" name="major" required value={values.major} onChange={handleChange('major')} error={errors.major} />
                 <SelectField label="GPA scale" name="gpaScale"
-  placeholder="Select"     
-               options={[
+                  placeholder="Select"     
+                  options={[
                     { value: '4', label: 'Out of 4' },
                     { value: '5', label: 'Out of 5' },
                   ]} 

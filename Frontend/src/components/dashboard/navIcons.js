@@ -53,3 +53,11 @@ export const SignOutIcon = () => (
     <path d="M9 12h11m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+export const CertificateIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M9.3 13.2 8 20.5l4-2.2 4 2.2-1.3-7.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M9.7 9l1.6 1.6 3-3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);

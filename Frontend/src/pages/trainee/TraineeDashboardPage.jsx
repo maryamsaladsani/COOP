@@ -1,31 +1,13 @@
-import { Link } from 'react-router-dom';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import TrackCard from '../../components/dashboard/TrackCard';
 import InfoField from '../../components/dashboard/InfoField';
+import TRAINEE_NAV_ITEMS from './traineeNavItems';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
-import Button from '../../components/Button';
 import { useTraineeData } from '../../data/DataContext';
-import { useNow, formatDate } from '../../utils/time';
-import { HomeIcon, DocumentIcon, SunriseIcon } from '../../components/dashboard/navIcons';
+import { useNow } from '../../utils/time';
 import './TraineeDashboard.css';
 
-const NAV_ITEMS = [
-  { to: '/app/trainee', label: 'Dashboard', icon: <HomeIcon />, end: true },
-  { to: '/app/trainee/contract', label: 'Contract', icon: <DocumentIcon /> },
-  { to: '/app/trainee/first-day', label: 'First day', icon: <SunriseIcon /> },
-];
-
-function handleCertificateDownload(record) {
-  const content = `Certificate of Completion\n\nThis certifies that ${record.firstName} ${record.lastName} has completed the Saudi Energy Coordinated Onboarding & Operations Program.\n\nDivision: ${record.tracks.divisionAssignment.division}\nIssued: ${formatDate(record.tracks.certificate.issuedAt)}`;
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${record.firstName}-${record.lastName}-certificate.txt`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
 
 function TraineeDashboardPage() {
   const { record } = useTraineeData();
@@ -33,7 +15,7 @@ function TraineeDashboardPage() {
 
   if (!record) {
     return (
-      <DashboardShell navItems={NAV_ITEMS}>
+      <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
         <SectionCard title="No record found">
           <p>We couldn't find your trainee record. Contact HR if this looks wrong.</p>
         </SectionCard>
@@ -43,10 +25,9 @@ function TraineeDashboardPage() {
 
   const { tracks, trainingDetails } = record;
   const tracksData = getTrackSummaries(record, now);
-  const certificateIssued = tracks.certificate.status === 'issued';
 
   return (
-    <DashboardShell navItems={NAV_ITEMS}>
+    <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
       <div className="trainee-dash">
         <div className="trainee-dash__intro">
           <h1>Your onboarding</h1>
@@ -73,52 +54,9 @@ function TraineeDashboardPage() {
           </div>
         </SectionCard>
 
-        <SectionCard
-          title="Your contract"
-          subtitle={
-            tracks.contract.signed
-              ? `Signed on ${formatDate(tracks.contract.signedAt)}.`
-              : tracks.contract.availableAt
-              ? 'Ready for your review and signature.'
-              : 'Becomes available once your coordinator confirms you started training.'
-          }
-          actions={
-            <Link to="/app/trainee/contract">
-              <Button variant="secondary" size="sm">
-                {tracks.contract.signed ? 'View signed contract' : 'View contract'}
-              </Button>
-            </Link>
-          }
-        />
+  
 
-        <SectionCard title="Your first day in Saudi Energy" subtitle="Orientation content to help you prepare.">
-          <Link to="/app/trainee/first-day">
-            <Button variant="secondary" size="sm">
-              Read orientation guide
-            </Button>
-          </Link>
-        </SectionCard>
-
-        <SectionCard title="Completion certificate">
-          {certificateIssued ? (
-            <div className="cert-download">
-              <p>Your certificate is ready.</p>
-              <Button variant="primary" size="sm" onClick={() => handleCertificateDownload(record)}>
-                Download final certificate
-              </Button>
-            </div>
-          ) : (
-            <div className="cert-download cert-download--disabled">
-              <p>Your certificate isn't ready yet.</p>
-              <span className="cert-download__reason">
-                HR issues this once your coordinator confirms you've started and completed training.
-              </span>
-              <Button variant="secondary" size="sm" disabled>
-                Download final certificate
-              </Button>
-            </div>
-          )}
-        </SectionCard>
+ 
       </div>
     </DashboardShell>
   );
