@@ -12,7 +12,14 @@ import './TraineeDashboard.css';
 const SECTIONS = [
   { icon: <CardIcon />, title: 'Where to go', body: 'On your first day, report to the HR Department in Phase 2 on Ground Floor at the Saudi Energy Headquarters. Please check in with the HR representative who sent your acceptance email. HR will welcome you, complete the initial onboarding process, and guide you to your assigned department and Training Coordinator.' },
   { icon: <DeskIcon />, title: 'What to bring', body: 'There is no need to bring any documents, as your onboarding has already been completed through the COOP platform. Simply bring your personal belongings and your motivation and arrive on time for your first day as a trinee in Saudi Energy company.' },
-  { icon: <PeopleIcon />, title: 'Who to contact', body: 'HR Department Email: hr.coop@saudienergy.com,  Training Coordinator Email: coordinator@saudienergy.com,  Training Supervisor Email: supervisor@saudienergy.com' },
+  { icon: <PeopleIcon />, title: 'Who to contact',
+    // body: 'HR Department Email: hr.coop@saudienergy.com,  Training Coordinator Email: coordinator@saudienergy.com,  Training Supervisor Email: supervisor@saudienergy.com'
+    contacts: [
+      { label: 'HR Department', email: 'hr.coop@se.com.sa' },
+      { label: 'Training Coordinator', email: 'coordinator@se.com.sa' },
+      { label: 'Training Supervisor', email: 'supervisor@se.com.sa' },
+    ],
+  },
 ];
 
 function TraineeFirstDayPage() {
@@ -33,7 +40,16 @@ function TraineeFirstDayPage() {
                 </span>
                 <div>
                   <h3>{section.title}</h3>
-                  <p>{section.body}</p>
+                  {/*<p>{section.body}</p>*/}
+                  <p>
+                    {section.contacts ? (
+                      section.contacts.map((c) => (
+                          <div key={c.label}>{c.label} Email: {c.email}</div>
+                      ))
+                  ) : (
+                      <p>{section.body}</p>
+                  )}
+                  </p>
                 </div>
               </div>
             ))}
