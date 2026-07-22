@@ -4,6 +4,8 @@ import Button from '../../components/Button';
 import { useTraineeData } from '../../data/DataContext';
 import { formatDate } from '../../utils/time';
 import TRAINEE_NAV_ITEMS from './traineeNavItems';
+import './TraineeDashboard.css';
+
 
 function handleCertificateDownload(record) {
   const content = `Certificate of Completion
@@ -46,37 +48,44 @@ function TraineeCertificatePage() {
     record.tracks?.certificate?.status === 'issued';
 
   return (
-    <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
-      <SectionCard title="Completion certificate">
-        {certificateReady ? (
-          <>
-            <p>Your completion certificate is ready.</p>
+      <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
+        <div className="trainee-dash">
 
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => handleCertificateDownload(record)}
-            >
-              Download final certificate
-            </Button>
-          </>
-        ) : (
-          <>
-            <h3>Your certificate isn't ready yet.</h3>
+          <div className="trainee-dash__intro">
+            <h1>Completion Certificate</h1>
+          </div>
 
-            <p>
-              HR issues this once your coordinator confirms you have started
-              and completed training.
-            </p>
+          <SectionCard>
+            {certificateReady ? (
+                <>
+                  <p>Your completion certificate is ready.</p>
 
-            <Button type="button" disabled>
-              Download final certificate
-            </Button>
-          </>
-        )}
-      </SectionCard>
-    </DashboardShell>
-  );
+                  <Button
+                      type="button"
+                      variant="primary"
+                      onClick={() => handleCertificateDownload(record)}
+                  >
+                    Download final certificate
+                  </Button>
+                </>
+            ) : (
+                <>
+                  <h3>Your certificate isn't ready yet.</h3>
+
+                  <p>
+                    HR issues this once your coordinator confirms you have started
+                    and completed training.
+                  </p>
+
+                  <Button type="button" disabled>
+                    Download final certificate
+                  </Button>
+                </>
+            )}
+          </SectionCard>
+          </div>
+      </DashboardShell>
+);
 }
 
 export default TraineeCertificatePage;
