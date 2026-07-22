@@ -2,7 +2,7 @@ import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import TrackCard from '../../components/dashboard/TrackCard';
 import InfoField from '../../components/dashboard/InfoField';
-import TRAINEE_NAV_ITEMS from './traineeNavItems';
+import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
 import { useTraineeData } from '../../data/DataContext';
 import { useNow } from '../../utils/time';

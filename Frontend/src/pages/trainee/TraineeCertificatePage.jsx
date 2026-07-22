@@ -3,7 +3,7 @@ import SectionCard from '../../components/dashboard/SectionCard';
 import Button from '../../components/Button';
 import { useTraineeData } from '../../data/DataContext';
 import { formatDate } from '../../utils/time';
-import TRAINEE_NAV_ITEMS from './traineeNavItems';
+import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import './TraineeDashboard.css';
 
 

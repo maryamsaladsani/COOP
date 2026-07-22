@@ -3,6 +3,7 @@ import {
     DocumentIcon,
     SunriseIcon,
     CertificateIcon,
+    DetailsIcon,
   } from '../../components/dashboard/navIcons';
   
   const TRAINEE_NAV_ITEMS = [
@@ -11,6 +12,11 @@ import {
       label: 'Dashboard',
       icon: <HomeIcon />,
       end: true,
+    },
+    {
+      to: '/app/trainee/details',
+      label: 'Details',
+      icon: <DetailsIcon />,
     },
     {
       to: '/app/trainee/contract',

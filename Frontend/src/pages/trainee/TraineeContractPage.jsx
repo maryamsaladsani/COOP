@@ -6,7 +6,7 @@ import StatusPill from '../../components/dashboard/StatusPill';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
 import FormBanner from '../../components/form/FormBanner';
-import TRAINEE_NAV_ITEMS from './traineeNavItems';
+import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import { useTraineeData } from '../../data/DataContext';
 import { formatDate } from '../../utils/time';
 import './TraineeDashboard.css';

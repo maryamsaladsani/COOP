@@ -1,6 +1,6 @@
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
-import TRAINEE_NAV_ITEMS from './traineeNavItems';
+import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import { PeopleIcon } from '../../components/dashboard/navIcons';
 import { DeskIcon, CardIcon } from '../../components/dashboard/trackIcons';
 import './TraineeDashboard.css';
