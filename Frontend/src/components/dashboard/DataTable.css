@@ -44,6 +44,14 @@
   width: 40px;
 }
 
+.data-table__row--disabled {
+  opacity: 0.55;
+}
+
+.data-table__row--disabled td {
+  cursor: not-allowed;
+}
+
 .data-table__footer {
   display: flex;
   align-items: center;

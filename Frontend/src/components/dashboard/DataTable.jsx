@@ -14,6 +14,7 @@ function DataTable({
   selectable = false,
   selectedIds,
   onSelectedChange,
+  isRowSelectable = () => true,
   emptyTitle = 'No records found',
   emptyBody = 'Try adjusting your search or filters.',
 }) {
@@ -23,16 +24,34 @@ function DataTable({
     setPage(1);
   }, [rows.length]);
 
+  // If a selected row falls out of eligibility (its underlying state
+  // changed, not just filtered out of the current search), drop it from
+  // the selection instead of leaving a stale, now-ineligible id behind.
+  useEffect(() => {
+    if (!selectable || !onSelectedChange || !selectedIds || selectedIds.length === 0) return;
+    const rowById = new Map(rows.map((row) => [getRowId(row), row]));
+    const pruned = selectedIds.filter((id) => {
+      const row = rowById.get(id);
+      return row ? isRowSelectable(row) : true;
+    });
+    if (pruned.length !== selectedIds.length) {
+      onSelectedChange(pruned);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, selectable]);
+
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
+  const selectablePageRows = pageRows.filter((row) => isRowSelectable(row));
 
-  const allOnPageSelected = selectable && pageRows.length > 0 && pageRows.every((row) => selectedIds?.includes(getRowId(row)));
+  const allOnPageSelected =
+    selectable && selectablePageRows.length > 0 && selectablePageRows.every((row) => selectedIds?.includes(getRowId(row)));
 
   const toggleAllOnPage = () => {
     if (!onSelectedChange) return;
-    const pageIds = pageRows.map(getRowId);
+    const pageIds = selectablePageRows.map(getRowId);
     if (allOnPageSelected) {
       onSelectedChange(selectedIds.filter((id) => !pageIds.includes(id)));
     } else {
@@ -80,12 +99,15 @@ function DataTable({
           <tbody>
             {pageRows.map((row) => {
               const id = getRowId(row);
+              const rowSelectable = isRowSelectable(row);
+              const rowClasses = [
+                onRowClick ? 'data-table__row--clickable' : '',
+                selectable && !rowSelectable ? 'data-table__row--disabled' : '',
+              ]
+                .filter(Boolean)
+                .join(' ');
               return (
-                <tr
-                  key={id}
-                  className={onRowClick ? 'data-table__row--clickable' : undefined}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                >
+                <tr key={id} className={rowClasses || undefined} onClick={onRowClick ? () => onRowClick(row) : undefined}>
                   {selectable && (
                     <td className="data-table__checkbox-col" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -93,6 +115,7 @@ function DataTable({
                         className="checkbox"
                         checked={Boolean(selectedIds?.includes(id))}
                         onChange={() => toggleRow(id)}
+                        disabled={!rowSelectable}
                         aria-label="Select row"
                       />
                     </td>
