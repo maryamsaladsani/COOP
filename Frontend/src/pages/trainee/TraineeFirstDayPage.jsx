@@ -2,7 +2,7 @@ import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import TRAINEE_NAV_ITEMS from './traineeNavItems';
 import { PeopleIcon } from '../../components/dashboard/navIcons';
-import { DeskIcon, CardIcon, AccountIcon } from '../../components/dashboard/trackIcons';
+import { DeskIcon, CardIcon } from '../../components/dashboard/trackIcons';
 import './TraineeDashboard.css';
 
 
@@ -10,10 +10,9 @@ import './TraineeDashboard.css';
 // Structure only — copy is placeholder until HR/Comms provides the final
 // orientation content (REQ-06).
 const SECTIONS = [
-  { icon: <CardIcon />, title: 'Where to go', body: 'Building and entrance details for your first day will appear here once confirmed.' },
-  { icon: <DeskIcon />, title: 'What to bring', body: 'A checklist of documents and items to bring on day one will appear here.' },
-  { icon: <AccountIcon />, title: 'Getting set up', body: 'How to activate your company account and card on arrival will appear here.' },
-  { icon: <PeopleIcon />, title: 'Who to contact', body: "Your Training Coordinator's contact details will appear here." },
+  { icon: <CardIcon />, title: 'Where to go', body: 'On your first day, report to the HR Department in Phase 2 on Ground Floor at the Saudi Energy Headquarters. Please check in with the HR representative who sent your acceptance email. HR will welcome you, complete the initial onboarding process, and guide you to your assigned department and Training Coordinator.' },
+  { icon: <DeskIcon />, title: 'What to bring', body: 'There is no need to bring any documents, as your onboarding has already been completed through the COOP platform. Simply bring your personal belongings and your motivation and arrive on time for your first day as a trinee in Saudi Energy company.' },
+  { icon: <PeopleIcon />, title: 'Who to contact', body: 'HR Department Email: hr.coop@saudienergy.com,  Training Coordinator Email: coordinator@saudienergy.com,  Training Supervisor Email: supervisor@saudienergy.com' },
 ];
 
 function TraineeFirstDayPage() {
