@@ -13,13 +13,8 @@ import FormBanner from '../../components/form/FormBanner';
 import { useCoordinatorData } from '../../data/DataContext';
 import { useNow, formatDate } from '../../utils/time';
 import { DIVISIONS } from '../../data/mockData';
-import { PeopleIcon, GridIcon } from '../../components/dashboard/navIcons';
+import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import '../../components/dashboard/DashboardPage.css';
-
-const NAV_ITEMS = [
-  { to: '/app/coordinator', label: 'My Students', icon: <PeopleIcon />, end: true },
-  { to: '/app/coordinator/divisions', label: 'Divisions', icon: <GridIcon /> },
-];
 
 const DIVISION_INITIAL = { division: '', managerName: '', altSupervisorName: '', buildingNumber: '', floorNumber: '' };
 
@@ -40,7 +35,7 @@ function CoordinatorStudentProfilePage() {
 
   if (!record) {
     return (
-      <DashboardShell navItems={NAV_ITEMS}>
+      <DashboardShell navItems={COORDINATOR_NAV_ITEMS}>
         <SectionCard title="Student not found">
           <p>This trainee isn't assigned to you, or doesn't exist.</p>
           <Link to="/app/coordinator">Back to my students</Link>
@@ -83,7 +78,7 @@ function CoordinatorStudentProfilePage() {
   };
 
   return (
-    <DashboardShell navItems={NAV_ITEMS}>
+    <DashboardShell navItems={COORDINATOR_NAV_ITEMS}>
       <div className="dash-page">
         <div>
           <Link to="/app/coordinator" className="profile-header__back">

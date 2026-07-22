@@ -3,20 +3,15 @@ import SectionCard from '../../components/dashboard/SectionCard';
 import { useCoordinatorData } from '../../data/DataContext';
 import { DIVISIONS } from '../../data/mockData';
 import { DivisionIcon } from '../../components/dashboard/trackIcons';
-import { PeopleIcon, GridIcon } from '../../components/dashboard/navIcons';
+import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import '../../components/dashboard/DashboardPage.css';
 import './CoordinatorDivisions.css';
-
-const NAV_ITEMS = [
-  { to: '/app/coordinator', label: 'My Students', icon: <PeopleIcon />, end: true },
-  { to: '/app/coordinator/divisions', label: 'Divisions', icon: <GridIcon /> },
-];
 
 function CoordinatorDivisionsPage() {
   const { students } = useCoordinatorData();
 
   return (
-    <DashboardShell navItems={NAV_ITEMS}>
+    <DashboardShell navItems={COORDINATOR_NAV_ITEMS}>
       <div className="dash-page">
         <div className="dash-page__intro">
           <h1>Divisions</h1>

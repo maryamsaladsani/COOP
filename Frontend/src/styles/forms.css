@@ -228,6 +228,12 @@
   flex-shrink: 0;
 }
 
+.checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  accent-color: var(--text-tertiary);
+}
+
 .form-status {
   display: flex;
   align-items: flex-start;

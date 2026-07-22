@@ -7,13 +7,8 @@ import DataTable from '../../components/dashboard/DataTable';
 import TextField from '../../components/form/TextField';
 import { useCoordinatorData } from '../../data/DataContext';
 import { formatDate } from '../../utils/time';
-import { PeopleIcon, GridIcon } from '../../components/dashboard/navIcons';
+import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import '../../components/dashboard/DashboardPage.css';
-
-const NAV_ITEMS = [
-  { to: '/app/coordinator', label: 'My Students', icon: <PeopleIcon />, end: true },
-  { to: '/app/coordinator/divisions', label: 'Divisions', icon: <GridIcon /> },
-];
 
 const FILTERS = [
   { key: 'all', label: 'All' },
@@ -87,7 +82,7 @@ function CoordinatorDashboardPage() {
   ];
 
   return (
-    <DashboardShell navItems={NAV_ITEMS}>
+    <DashboardShell navItems={COORDINATOR_NAV_ITEMS}>
       <div className="dash-page">
         <div className="dash-page__intro">
           <h1>My students</h1>

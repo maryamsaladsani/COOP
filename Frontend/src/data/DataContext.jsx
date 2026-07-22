@@ -258,13 +258,13 @@ export function DataProvider({ children }) {
     );
   }
 
-  async function confirmTrainingStarted(id, coordinatorUsername) {
+  async function confirmTrainingStarted(id, coordinatorUsername, date) {
     assertOwnedByCoordinator(id, coordinatorUsername);
     await delay();
     setRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
-        const startedAt = new Date().toISOString();
+        const startedAt = date ? new Date(date).toISOString() : new Date().toISOString();
         return {
           ...r,
           tracks: {
@@ -289,15 +289,14 @@ export function DataProvider({ children }) {
     );
   }
 
-  async function confirmTrainingCompleted(id, coordinatorUsername) {
+  async function confirmTrainingCompleted(id, coordinatorUsername, date) {
     const record = assertOwnedByCoordinator(id, coordinatorUsername);
     if (!record.tracks?.training?.started) throw new Error('Confirm the trainee started before confirming completion.');
     await delay();
+    const completedAt = date ? new Date(date).toISOString() : new Date().toISOString();
     setRecords((prev) =>
       prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, training: { ...r.tracks.training, completed: true, completedAt: new Date().toISOString() } } }
-          : r
+        r.id === id ? { ...r, tracks: { ...r.tracks, training: { ...r.tracks.training, completed: true, completedAt } } } : r
       )
     );
   }
@@ -391,9 +390,9 @@ export function useCoordinatorData() {
     requestDeskDevice: (id) => store.requestDeskDevice(id, username),
     markDeskReady: (id) => store.markDeskReady(id, username),
     assignDivision: (id, payload) => store.assignDivision(id, payload, username),
-    confirmTrainingStarted: (id) => store.confirmTrainingStarted(id, username),
+    confirmTrainingStarted: (id, date) => store.confirmTrainingStarted(id, username, date),
     confirmTrainingNotStarted: (id) => store.confirmTrainingNotStarted(id, username),
-    confirmTrainingCompleted: (id) => store.confirmTrainingCompleted(id, username),
+    confirmTrainingCompleted: (id, date) => store.confirmTrainingCompleted(id, username, date),
   };
 }
 
