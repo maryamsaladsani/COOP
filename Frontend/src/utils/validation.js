@@ -1,4 +1,5 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SAUDI_MOBILE_RE = /^(?:\+966|966|0)?5\d{8}$/;
 
 export function isRequired(value) {
   return typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
