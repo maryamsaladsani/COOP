@@ -21,6 +21,7 @@ import HRStudentProfilePage from './pages/hr/HRStudentProfilePage';
 import CoordinatorDashboardPage from './pages/coordinator/CoordinatorDashboardPage';
 import CoordinatorStudentProfilePage from './pages/coordinator/CoordinatorStudentProfilePage';
 import CoordinatorDivisionsPage from './pages/coordinator/CoordinatorDivisionsPage';
+import CoordinatorBulkActionPage from './pages/coordinator/CoordinatorBulkActionPage';
 
 function App() {
   return (
@@ -118,6 +119,14 @@ function App() {
                 element={
                   <RequireRole role="coordinator">
                     <CoordinatorDivisionsPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/app/coordinator/bulk/:actionType"
+                element={
+                  <RequireRole role="coordinator">
+                    <CoordinatorBulkActionPage />
                   </RequireRole>
                 }
               />
