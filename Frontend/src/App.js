@@ -22,6 +22,7 @@ import CoordinatorDashboardPage from './pages/coordinator/CoordinatorDashboardPa
 import CoordinatorStudentProfilePage from './pages/coordinator/CoordinatorStudentProfilePage';
 import CoordinatorDivisionsPage from './pages/coordinator/CoordinatorDivisionsPage';
 import CoordinatorBulkActionPage from './pages/coordinator/CoordinatorBulkActionPage';
+import TraineeDetailsPage from './pages/trainee/TraineeDetailsPage';
 
 function App() {
   return (
@@ -53,6 +54,14 @@ function App() {
                   <RequireRole role="student">
                     <TraineeDashboardPage />
                   </RequireRole>
+                }
+              />
+              <Route
+                path="/app/trainee/details"
+                element={
+                    <RequireRole role="student">
+                        <TraineeDetailsPage />
+                    </RequireRole>
                 }
               />
               <Route
