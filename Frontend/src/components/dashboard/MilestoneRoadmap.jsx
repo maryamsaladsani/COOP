@@ -35,7 +35,6 @@ function MilestoneRoadmap({ steps }) {
             <div className="milestone-roadmap__step" key={step.name}>
               <div className="milestone-roadmap__label">
                 <div className="milestone-roadmap__title">{step.name}</div>
-              <div className="milestone-roadmap__date">{step.date || ' '}</div>
               </div>
               <div className="milestone-roadmap__marker-row">
                 {index > 0 && (
