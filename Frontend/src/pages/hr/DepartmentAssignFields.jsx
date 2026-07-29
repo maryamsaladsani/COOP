@@ -1,4 +1,4 @@
-HRimport SelectField from '../../components/form/SelectField';
+import SelectField from '../../components/form/SelectField';
 import TextField from '../../components/form/TextField';
 import { BRANCHES, COORDINATORS } from '../../data/mockData';
 import { DEPARTMENTS } from '../../data/departments';
