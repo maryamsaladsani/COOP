@@ -8,13 +8,12 @@ import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
 import FormBanner from '../../components/form/FormBanner';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
-import SelectField from '../../components/form/SelectField';
 import { useHRData } from '../../data/DataContext';
-import { BRANCHES, COORDINATORS } from '../../data/mockData';
-import { DEPARTMENTS } from '../../data/departments';
+import { COORDINATORS } from '../../data/mockData';
 import HR_NAV_ITEMS from './hrNavItems';
 import HR_BULK_ACTIONS from './hrBulkActions';
 import getHRStudentColumns from './hrStudentColumns';
+import DepartmentAssignFields from './DepartmentAssignFields';
 import './HRBulkAction.css';
 
 const ASSIGN_INITIAL = {
@@ -103,21 +102,6 @@ function HRBulkActionView({ action }) {
       return 'Department and coordinator are required.';
     }
     return '';
-  };
-
-  const handleDepartmentSelect = (departmentId) => {
-    const dept = DEPARTMENTS.find((d) => d.id === departmentId);
-    if (!dept) return;
-    setAssignValues((v) => ({
-      ...v,
-      departmentId,
-      department: dept.name,
-      coordinatorUsername: dept.trainingCoordinator,
-      branch: dept.branch,
-      businessLine: dept.businessLine,
-      buildingNumber: dept.buildingNumber,
-      floorNumber: dept.floorNumber,
-    }));
   };
 
   // Re-checks every selected id against the live student list right before
@@ -258,61 +242,7 @@ function HRBulkActionView({ action }) {
 
         {action.fields === 'assign' && (
           <SectionCard title="Assignment details" subtitle="Applied to every selected trainee.">
-            <div className="profile-form">
-              <SelectField
-                label="Department"
-                name="departmentId"
-                required
-                placeholder="Select department"
-                options={DEPARTMENTS.map((d) => ({ value: d.id, label: d.name }))}
-                value={assignValues.departmentId}
-                onChange={(e) => handleDepartmentSelect(e.target.value)}
-                hint="Selecting a department auto-fills the fields below — you can still edit them."
-              />
-              <div className="profile-form__row">
-                <SelectField
-                  label="Training Coordinator"
-                  name="coordinatorUsername"
-                  required
-                  placeholder="Select coordinator"
-                  options={COORDINATORS.map((c) => ({ value: c.username, label: c.name }))}
-                  value={assignValues.coordinatorUsername}
-                  onChange={(e) => setAssignValues((v) => ({ ...v, coordinatorUsername: e.target.value }))}
-                />
-                <SelectField
-                  label="Branch"
-                  name="branch"
-                  options={BRANCHES.map((b) => ({ value: b, label: b }))}
-                  value={assignValues.branch}
-                  onChange={(e) => setAssignValues((v) => ({ ...v, branch: e.target.value }))}
-                />
-              </div>
-              <div className="profile-form__row">
-                <TextField
-                  label="Business line"
-                  name="businessLine"
-                  hint="Optional"
-                  value={assignValues.businessLine}
-                  onChange={(e) => setAssignValues((v) => ({ ...v, businessLine: e.target.value }))}
-                />
-                <TextField
-                  label="Building number"
-                  name="buildingNumber"
-                  hint="Optional"
-                  value={assignValues.buildingNumber}
-                  onChange={(e) => setAssignValues((v) => ({ ...v, buildingNumber: e.target.value }))}
-                />
-              </div>
-              <div className="profile-form__row">
-                <TextField
-                  label="Floor number"
-                  name="floorNumber"
-                  hint="Optional"
-                  value={assignValues.floorNumber}
-                  onChange={(e) => setAssignValues((v) => ({ ...v, floorNumber: e.target.value }))}
-                />
-              </div>
-            </div>
+            <DepartmentAssignFields values={assignValues} onChange={setAssignValues} />
           </SectionCard>
         )}
 

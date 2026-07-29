@@ -9,16 +9,24 @@ import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
-import SelectField from '../../components/form/SelectField';
 import FormBanner from '../../components/form/FormBanner';
 import { useHRData } from '../../data/DataContext';
 import { useNow, formatDate } from '../../utils/time';
 import { statusMeta } from '../../utils/statusMeta';
-import { BRANCHES, COORDINATORS } from '../../data/mockData';
+import { COORDINATORS } from '../../data/mockData';
 import HR_NAV_ITEMS from './hrNavItems';
+import DepartmentAssignFields from './DepartmentAssignFields';
 import '../../components/dashboard/DashboardPage.css';
 
-const ASSIGN_INITIAL = { department: '', coordinatorUsername: '', branch: 'Eastern', businessLine: '', buildingNumber: '', floorNumber: '' };
+const ASSIGN_INITIAL = {
+  departmentId: '',
+  department: '',
+  coordinatorUsername: '',
+  branch: 'Eastern',
+  businessLine: '',
+  buildingNumber: '',
+  floorNumber: '',
+};
 
 function HRStudentProfilePage() {
   const { id } = useParams();
@@ -101,7 +109,7 @@ function HRStudentProfilePage() {
     );
 
   const handleAssign = () => {
-    if (!assignValues.department.trim() || !assignValues.coordinatorUsername) {
+    if (!assignValues.departmentId || !assignValues.coordinatorUsername) {
       setDialogError('Department and coordinator are required.');
       return;
     }
@@ -346,58 +354,7 @@ function HRStudentProfilePage() {
         onConfirm={handleAssign}
         onClose={() => setAssignOpen(false)}
       >
-        <div className="profile-form">
-          <div className="profile-form__row">
-            <TextField
-              label="Department"
-              name="department"
-              required
-              value={assignValues.department}
-              onChange={(e) => setAssignValues((v) => ({ ...v, department: e.target.value }))}
-            />
-            <SelectField
-              label="Training Coordinator"
-              name="coordinatorUsername"
-              required
-              placeholder="Select coordinator"
-              options={COORDINATORS.map((c) => ({ value: c.username, label: c.name }))}
-              value={assignValues.coordinatorUsername}
-              onChange={(e) => setAssignValues((v) => ({ ...v, coordinatorUsername: e.target.value }))}
-            />
-          </div>
-          <div className="profile-form__row">
-            <SelectField
-              label="Branch"
-              name="branch"
-              options={BRANCHES.map((b) => ({ value: b, label: b }))}
-              value={assignValues.branch}
-              onChange={(e) => setAssignValues((v) => ({ ...v, branch: e.target.value }))}
-            />
-            <TextField
-              label="Business line"
-              name="businessLine"
-              hint="Optional"
-              value={assignValues.businessLine}
-              onChange={(e) => setAssignValues((v) => ({ ...v, businessLine: e.target.value }))}
-            />
-          </div>
-          <div className="profile-form__row">
-            <TextField
-              label="Building number"
-              name="buildingNumber"
-              hint="Optional"
-              value={assignValues.buildingNumber}
-              onChange={(e) => setAssignValues((v) => ({ ...v, buildingNumber: e.target.value }))}
-            />
-            <TextField
-              label="Floor number"
-              name="floorNumber"
-              hint="Optional"
-              value={assignValues.floorNumber}
-              onChange={(e) => setAssignValues((v) => ({ ...v, floorNumber: e.target.value }))}
-            />
-          </div>
-        </div>
+        <DepartmentAssignFields values={assignValues} onChange={setAssignValues} />
       </ConfirmDialog>
 
       <ConfirmDialog
