@@ -45,6 +45,7 @@ export function getTrackSummaries(record, now) {
       tone: 'complete',
       statusLabel: 'Accepted',
       detail: `Accepted on ${formatDate(decisionAt) || '—'}.`,
+      date: formatDate(decisionAt),
     },
     {
       icon: <CardIcon />,
@@ -57,6 +58,7 @@ export function getTrackSummaries(record, now) {
           : cardStatus === 'under_issuing'
           ? 'Submitted to ISD — usually ready within 2 hours.'
           : 'Ready to collect.',
+      date: null,
     },
     {
       icon: <DepartmentIcon />,
@@ -67,6 +69,7 @@ export function getTrackSummaries(record, now) {
         tracks.departmentAssignment.status === 'assigned'
           ? `${tracks.departmentAssignment.department} · Coordinator: ${tracks.departmentAssignment.coordinatorName}`
           : 'Not assigned yet.',
+      date: tracks.departmentAssignment.status === 'assigned' ? formatDate(tracks.departmentAssignment.assignedAt) : null,
     },
     {
       icon: <DivisionIcon />,
@@ -77,6 +80,7 @@ export function getTrackSummaries(record, now) {
         tracks.divisionAssignment.status === 'assigned'
           ? `${tracks.divisionAssignment.division} · Manager: ${tracks.divisionAssignment.managerName}`
           : 'Not assigned yet.',
+      date: tracks.divisionAssignment.status === 'assigned' ? formatDate(tracks.divisionAssignment.assignedAt) : null,
     },
     {
       icon: <DeskIcon />,
@@ -89,6 +93,7 @@ export function getTrackSummaries(record, now) {
           : tracks.deskDevice.status === 'requested'
           ? 'Requested, not yet ready.'
           : 'Not requested yet.',
+      date: tracks.deskDevice.status === 'ready' ? formatDate(tracks.deskDevice.readyAt) : null,
     },
     {
       icon: <AccountIcon />,
@@ -101,6 +106,7 @@ export function getTrackSummaries(record, now) {
           : accountStatus === 'under_issuing'
           ? 'Being provisioned — usually ready within 2 hours.'
           : 'Account is active.',
+      date: null,
     },
     {
       icon: <CertificateIcon />,
@@ -109,6 +115,7 @@ export function getTrackSummaries(record, now) {
       statusLabel: certificateMeta.label,
       detail:
         tracks.certificate.status === 'issued' ? `Issued on ${formatDate(tracks.certificate.issuedAt)}.` : 'Pending — awaiting HR issuance.',
+      date: tracks.certificate.status === 'issued' ? formatDate(tracks.certificate.issuedAt) : null,
     },
   ];
 }

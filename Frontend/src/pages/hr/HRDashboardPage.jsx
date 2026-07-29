@@ -2,16 +2,15 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
-import StatusPill from '../../components/dashboard/StatusPill';
 import DataTable from '../../components/dashboard/DataTable';
 import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
 import SelectField from '../../components/form/SelectField';
 import { useHRData } from '../../data/DataContext';
-import { statusMeta } from '../../utils/statusMeta';
-import { formatDate } from '../../utils/time';
 import { BRANCHES, COORDINATORS } from '../../data/mockData';
+import HR_NAV_ITEMS from './hrNavItems';
+import getHRStudentColumns from './hrStudentColumns';
 import '../../components/dashboard/DashboardPage.css';
 
 const FILTERS = [
@@ -58,34 +57,7 @@ function HRDashboardPage() {
       .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
   }, [students, filter, search]);
 
-  const columns = [
-    {
-      key: 'name',
-      header: 'Name',
-      render: (row) => (
-        <div>
-          <div style={{ fontWeight: 600, color: 'var(--ink)' }}>
-            {row.firstName} {row.lastName}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{row.universityName}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (row) => {
-        const meta = statusMeta(row.applicationStatus);
-        return <StatusPill tone={meta.tone} label={meta.label} />;
-      },
-    },
-    {
-      key: 'coordinator',
-      header: 'Coordinator',
-      render: (row) => row.tracks?.departmentAssignment?.coordinatorName || '—',
-    },
-    { key: 'submitted', header: 'Submitted', render: (row) => formatDate(row.submittedAt) },
-  ];
+  const columns = getHRStudentColumns();
 
   const handleOpenAssign = () => {
     setAssignValues(ASSIGN_INITIAL);
@@ -113,7 +85,7 @@ function HRDashboardPage() {
   };
 
   return (
-    <DashboardShell>
+    <DashboardShell navItems={HR_NAV_ITEMS}>
       <div className="dash-page">
         <div className="dash-page__intro">
           <h1>Students</h1>

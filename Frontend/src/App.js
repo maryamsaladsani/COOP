@@ -18,6 +18,7 @@ import TraineeContractPage from './pages/trainee/TraineeContractPage';
 import TraineeFirstDayPage from './pages/trainee/TraineeFirstDayPage';
 import HRDashboardPage from './pages/hr/HRDashboardPage';
 import HRStudentProfilePage from './pages/hr/HRStudentProfilePage';
+import HRBulkActionPage from './pages/hr/HRBulkActionPage';
 import CoordinatorDashboardPage from './pages/coordinator/CoordinatorDashboardPage';
 import CoordinatorStudentProfilePage from './pages/coordinator/CoordinatorStudentProfilePage';
 import CoordinatorDivisionsPage from './pages/coordinator/CoordinatorDivisionsPage';
@@ -47,7 +48,6 @@ function App() {
                   </RequireAuth>
                 }
               />
-
               <Route
                 path="/app/trainee"
                 element={
@@ -103,6 +103,14 @@ function App() {
                 element={
                   <RequireRole role="hr">
                     <HRStudentProfilePage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/app/hr/bulk/:actionType"
+                element={
+                  <RequireRole role="hr">
+                    <HRBulkActionPage />
                   </RequireRole>
                 }
               />

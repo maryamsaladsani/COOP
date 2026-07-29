@@ -125,6 +125,7 @@ export function DataProvider({ children }) {
           ? {
               ...r,
               cardRequest: cardData,
+              cardRequestStatus: 'requested',
               tracks: { ...r.tracks, card: { status: 'under_issuing', underIssuingAt: new Date().toISOString() } },
             }
           : r

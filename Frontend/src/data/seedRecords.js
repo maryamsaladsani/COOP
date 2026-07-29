@@ -71,6 +71,7 @@ export const SEED_RECORDS = [
     decisionAt: ago(55 * DAY),
     username: 'lama.trainee',
     trainingDetails: { branch: 'Eastern', businessLine: 'Digital & Technology', buildingNumber: '14', floorNumber: '3' },
+    cardRequestStatus: 'requested',
     tracks: {
       ...baseTracks(),
       card: { status: 'under_issuing', underIssuingAt: ago(30 * DAY) },
@@ -126,6 +127,7 @@ export const SEED_RECORDS = [
     decisionAt: ago(18 * DAY),
     username: 'yousef.alqahtani',
     trainingDetails: { branch: 'Eastern', businessLine: 'Operations', buildingNumber: '7', floorNumber: '1' },
+    cardRequestStatus: 'not_requested',
     tracks: {
       ...baseTracks(),
       departmentAssignment: {
@@ -168,6 +170,7 @@ export const SEED_RECORDS = [
     decisionAt: ago(22 * DAY),
     username: 'sara.alotaibi',
     trainingDetails: { branch: 'Eastern', businessLine: 'Corporate Functions', buildingNumber: '2', floorNumber: '5' },
+    cardRequestStatus: 'requested',
     tracks: {
       ...baseTracks(),
       card: { status: 'under_issuing', underIssuingAt: ago(15 * MIN) },
@@ -221,6 +224,7 @@ export const SEED_RECORDS = [
     decisionAt: ago(65 * DAY),
     username: 'abdullah.alghamdi',
     trainingDetails: { branch: 'Western', businessLine: 'Corporate Strategy', buildingNumber: '1', floorNumber: '6' },
+    cardRequestStatus: 'requested',
     tracks: {
       ...baseTracks(),
       card: { status: 'under_issuing', underIssuingAt: ago(50 * DAY) },
@@ -276,6 +280,7 @@ export const SEED_RECORDS = [
     decisionAt: ago(4 * DAY),
     username: 'deema.alfaraj',
     trainingDetails: baseTrainingDetails(),
+    cardRequestStatus: 'not_requested',
     tracks: baseTracks(),
   },
 
@@ -311,6 +316,7 @@ export const SEED_RECORDS = [
     decisionAt: null,
     username: null,
     trainingDetails: null,
+    cardRequestStatus: 'not_requested',
     tracks: null,
   },
   {
@@ -344,6 +350,7 @@ export const SEED_RECORDS = [
     decisionAt: null,
     username: null,
     trainingDetails: null,
+    cardRequestStatus: 'not_requested',
     tracks: null,
   },
   {
@@ -377,6 +384,7 @@ export const SEED_RECORDS = [
     decisionAt: null,
     username: null,
     trainingDetails: null,
+    cardRequestStatus: 'not_requested',
     tracks: null,
   },
   {
@@ -410,6 +418,7 @@ export const SEED_RECORDS = [
     decisionAt: null,
     username: null,
     trainingDetails: null,
+    cardRequestStatus: 'not_requested',
     tracks: null,
   },
 
@@ -445,6 +454,7 @@ export const SEED_RECORDS = [
     decisionAt: ago(8 * DAY),
     username: null,
     trainingDetails: null,
+    cardRequestStatus: 'not_requested',
     tracks: null,
   },
 ];
