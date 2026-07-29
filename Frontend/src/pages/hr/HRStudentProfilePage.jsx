@@ -15,6 +15,7 @@ import { useHRData } from '../../data/DataContext';
 import { useNow, formatDate } from '../../utils/time';
 import { statusMeta } from '../../utils/statusMeta';
 import { BRANCHES, COORDINATORS } from '../../data/mockData';
+import HR_NAV_ITEMS from './hrNavItems';
 import '../../components/dashboard/DashboardPage.css';
 
 const ASSIGN_INITIAL = { department: '', coordinatorUsername: '', branch: 'Eastern', businessLine: '', buildingNumber: '', floorNumber: '' };
@@ -44,7 +45,7 @@ function HRStudentProfilePage() {
 
   if (!record) {
     return (
-      <DashboardShell>
+      <DashboardShell navItems={HR_NAV_ITEMS}>
         <SectionCard title="Student not found">
           <Link to="/app/hr">Back to students</Link>
         </SectionCard>
@@ -151,7 +152,7 @@ function HRStudentProfilePage() {
   const certIssued = record.tracks?.certificate?.status === 'issued';
 
   return (
-    <DashboardShell>
+    <DashboardShell navItems={HR_NAV_ITEMS}>
       <div className="dash-page">
         <div>
           <Link to="/app/hr" className="profile-header__back">
