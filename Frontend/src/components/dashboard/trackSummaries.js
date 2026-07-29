@@ -67,7 +67,9 @@ export function getTrackSummaries(record, now) {
       statusLabel: departmentMeta.label,
       detail:
         tracks.departmentAssignment.status === 'assigned'
-          ? `${tracks.departmentAssignment.department} · Coordinator: ${tracks.departmentAssignment.coordinatorName}`
+          ? `${tracks.departmentAssignment.department || 'Department not set'} · Coordinator: ${
+              tracks.departmentAssignment.coordinatorName || 'not yet assigned'
+            }`
           : 'Not assigned yet.',
       date: tracks.departmentAssignment.status === 'assigned' ? formatDate(tracks.departmentAssignment.assignedAt) : null,
     },
@@ -83,6 +85,19 @@ export function getTrackSummaries(record, now) {
       date: tracks.divisionAssignment.status === 'assigned' ? formatDate(tracks.divisionAssignment.assignedAt) : null,
     },
     {
+      icon: <AccountIcon />,
+      name: 'Account Credentials',
+      tone: accountMeta.tone,
+      statusLabel: accountMeta.label,
+      detail:
+          accountStatus === 'not_requested'
+              ? 'SE account not requested yet.'
+              : accountStatus === 'under_issuing'
+                  ? 'Being provisioned — usually ready within 2 hours.'
+                  : 'Account is active.',
+      date: null,
+    },
+    {
       icon: <DeskIcon />,
       name: 'Desk & Device',
       tone: deskMeta.tone,
@@ -94,19 +109,6 @@ export function getTrackSummaries(record, now) {
           ? 'Requested, not yet ready.'
           : 'Not requested yet.',
       date: tracks.deskDevice.status === 'ready' ? formatDate(tracks.deskDevice.readyAt) : null,
-    },
-    {
-      icon: <AccountIcon />,
-      name: 'Account Credentials',
-      tone: accountMeta.tone,
-      statusLabel: accountMeta.label,
-      detail:
-        accountStatus === 'not_requested'
-          ? 'SE account not requested yet.'
-          : accountStatus === 'under_issuing'
-          ? 'Being provisioned — usually ready within 2 hours.'
-          : 'Account is active.',
-      date: null,
     },
     {
       icon: <CertificateIcon />,

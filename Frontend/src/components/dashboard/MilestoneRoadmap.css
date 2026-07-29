@@ -1,0 +1,165 @@
+.milestone-roadmap__track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.milestone-roadmap__step {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 var(--space-2);
+}
+
+/* Fixed height regardless of 1- vs 2-line titles (e.g. "Acceptance" vs
+   "Department Assignment") — bottom-aligned so the gap above the marker
+   row is identical for every step, keeping every node's circle on the
+   same horizontal axis. Without this, taller label blocks push their
+   node down and the connector line zigzags. */
+.milestone-roadmap__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 50px;
+}
+
+.milestone-roadmap__title {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.milestone-roadmap__date {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.milestone-roadmap__marker-row {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  margin-top: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milestone-roadmap__connector {
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.milestone-roadmap__connector--green {
+  background: var(--grad-green);
+}
+
+.milestone-roadmap__connector--gray {
+  background: var(--gray-300);
+}
+
+.milestone-roadmap__marker {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  background: var(--surface-card);
+}
+
+.milestone-roadmap__marker--completed {
+  background: var(--grad-green);
+  border-color: var(--grad-green);
+  color: var(--ink);
+}
+
+.milestone-roadmap__marker--in_progress {
+  border-color: var(--status-progress-fg);
+  color: var(--status-progress-fg);
+}
+
+.milestone-roadmap__marker--not_started {
+  border-color: var(--gray-300);
+  color: var(--text-tertiary);
+}
+
+.milestone-roadmap__caption {
+  margin: var(--space-2) 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  max-width: 160px;
+}
+
+.milestone-roadmap__legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.milestone-roadmap__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.milestone-roadmap__legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.milestone-roadmap__legend-dot--completed {
+  background: var(--grad-green);
+  border-color: var(--grad-green);
+}
+
+.milestone-roadmap__legend-dot--in_progress {
+  background: var(--surface-card);
+  border-color: var(--status-progress-fg);
+}
+
+.milestone-roadmap__legend-dot--not_started {
+  background: var(--surface-card);
+  border-color: var(--gray-300);
+}
+
+@media (max-width: 720px) {
+  .milestone-roadmap__track {
+    overflow-x: auto;
+    padding-bottom: var(--space-3);
+  }
+
+  .milestone-roadmap__step {
+    flex: 0 0 auto;
+    width: 140px;
+  }
+}

@@ -1,6 +1,7 @@
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import TrackCard from '../../components/dashboard/TrackCard';
+import MilestoneRoadmap from '../../components/dashboard/MilestoneRoadmap';
 import InfoField from '../../components/dashboard/InfoField';
 import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
@@ -33,6 +34,10 @@ function TraineeDashboardPage() {
           <h1>Your onboarding</h1>
           <p>Each track below updates independently as HR and your coordinator complete their steps.</p>
         </div>
+
+        <SectionCard title="Onboarding roadmap" subtitle="Your milestones from acceptance to certificate.">
+          <MilestoneRoadmap steps={tracksData} />
+        </SectionCard>
 
         <div className="track-rail">
           {tracksData.map((t) => (
