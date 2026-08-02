@@ -1,0 +1,189 @@
+// COOP — Prisma schema
+// Backend: Express + SQLite, hosted on Railway (persistent volume)
+// See ../BACKEND_CONTEXT.md for full requirements context.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  TRAINEE
+  HR
+  COORDINATOR
+}
+
+// Pre-account application decision (REQ-15/19/20). Distinct from Milestone:
+// a Trainee row exists at PENDING before any account/credentials exist.
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// Confirmed linear 7-step sequence. Ordered top-to-bottom; enum member order
+// has no semantic meaning to Prisma/SQLite, so ordering is enforced in
+// application code (a lookup array), not by the enum itself.
+enum Milestone {
+  ACCEPTANCE
+  COMPANY_CARD
+  DEPARTMENT_ASSIGNMENT
+  DIVISION_ASSIGNMENT
+  ACCOUNT_CREDENTIALS
+  DESK_DEVICE
+  CERTIFICATE
+}
+
+// REQ-21/22: card request lifecycle, independently of milestone position.
+enum CardStatus {
+  NOT_REQUESTED
+  REQUESTED
+  ISSUED
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+// Single table for all three roles (REQ-37 RBAC, REQ-28/29/30/31 auth).
+// Role-specific data (the full application/onboarding record) lives on the
+// related Trainee table, joined by FK — not inheritance, not embedded here.
+model User {
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String // bcrypt hash
+  role     Role
+  fullName String
+  phone    String?
+
+  // REQ-43: lock after 10 consecutive failed attempts
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Back-relations -----------------------------------------------------------
+
+  // Present only when role == TRAINEE and the application has been accepted
+  // (account is auto-created at REQ-16, so this is null pre-acceptance).
+  trainee Trainee? @relation("TraineeAccount")
+
+  // Present only when role == COORDINATOR: trainees assigned to this
+  // coordinator (REQ-25) and the departments they head (per spreadsheet).
+  coordinatedTrainees    Trainee[]    @relation("CoordinatorAssignment")
+  coordinatedDepartments Department[] @relation("DepartmentCoordinator")
+}
+
+// One canonical record per trainee, created at application submission
+// (REQ-01) and never duplicated elsewhere. userId is nullable because a
+// Trainee exists (PENDING) before HR accepts/rejects — the User account
+// (login credentials) is only created on acceptance (REQ-16).
+model Trainee {
+  id String @id @default(cuid())
+
+  userId String? @unique
+  user   User?   @relation("TraineeAccount", fields: [userId], references: [id])
+
+  // --- REQ-01: application fields ------------------------------------------
+  fullName                String
+  phone                   String
+  birthDate               DateTime
+  personalEmail           String   @unique
+  universityEmail         String // university training email (REQ-18 recipient)
+  universityName          String
+  college                 String
+  major                   String
+  gpa                     Float
+  startDate               DateTime
+  endDate                 DateTime
+  durationMonths          Int
+  nationality             String
+  nationalId              String   @unique
+  bloodType               String
+  signatureUrl            String
+  personalImageUrl        String
+  universityTranscriptUrl String
+  cvUrl                   String
+  iban                    String
+  universityLetterUrl     String
+
+  // --- REQ-02/03: referral ---------------------------------------------------
+  referralSource      String
+  referringEmployeeId String? // required only if referralSource indicates an employee (validated in app code)
+
+  // --- REQ-15/19/20: HR accept/reject decision --------------------------------
+  applicationStatus ApplicationStatus @default(PENDING)
+  acceptedAt        DateTime?
+  rejectedAt        DateTime?
+
+  // --- REQ-04: single ordered onboarding milestone ---------------------------
+  milestone Milestone @default(ACCEPTANCE)
+
+  // --- REQ-07/08: contract, standalone from milestone -------------------------
+  contractSigned   Boolean   @default(false)
+  contractSignedAt DateTime?
+
+  // --- REQ-25/36: coordinator assignment (query-level scoping) ---------------
+  coordinatorId String?
+  coordinator   User?   @relation("CoordinatorAssignment", fields: [coordinatorId], references: [id])
+
+  // --- REQ-11: division assignment (plain field, coordinator-assigned) -------
+  division String?
+
+  // Department assignment: read-only reference row (see Department below).
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  // --- REQ-21/22: ISD card request + 2-hour auto-transition -------------------
+  cardStatus      CardStatus @default(NOT_REQUESTED)
+  cardRequestedAt DateTime?
+  cardIssuedAt    DateTime?
+
+  // --- REQ-14: coordinator confirmation gating REQ-26 -------------------------
+  trainingCompleted   Boolean   @default(false)
+  trainingCompletedAt DateTime?
+
+  // --- REQ-26: certificate ----------------------------------------------------
+  certificateIssued   Boolean   @default(false)
+  certificateIssuedAt DateTime?
+
+  // --- REQ-27: withdrawal ------------------------------------------------------
+  withdrawn   Boolean   @default(false)
+  withdrawnAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([coordinatorId])
+  @@index([departmentId])
+  @@index([applicationStatus])
+  @@index([milestone])
+}
+
+// Read-only reference table seeded from the external spreadsheet — not
+// user-editable in-app. coordinatorId links to an actual COORDINATOR User
+// where one exists; nullable because the spreadsheet may be seeded before
+// that coordinator has completed self-service signup (REQ-28).
+model Department {
+  id             String  @id @default(cuid())
+  name           String  @unique
+  coordinatorId  String?
+  coordinator    User?   @relation("DepartmentCoordinator", fields: [coordinatorId], references: [id])
+  branch         String
+  businessLine   String
+  buildingNumber String
+  floorNumber    String
+
+  trainees Trainee[]
+
+  @@index([coordinatorId])
+}
