@@ -1,348 +1,69 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import * as authApi from './mockAuth';
-import { SEED_RECORDS, makeBaseTracks, makeBaseTrainingDetails } from './seedRecords';
+import { apiRequest, apiDownload } from './apiClient';
+import { adaptTrainee, adaptTrainees, milestoneReached } from './traineeAdapter';
 
-// Mock backend for everything that happens after sign-in: applications,
-// trainee tracks, and the HR/Coordinator actions that mutate them. Mirrors
-// mockAuth.js's shape (async, artificially delayed) so it reads like a real
-// API the frontend is calling, not a local reducer.
+// Every role below is wired to the real backend (see ../../Backend). Each
+// exported hook is self-contained (its own fetch/state) since each role
+// hits a differently-shaped, differently-scoped endpoint — there's no
+// longer one shared client-side array all roles read from.
 
-const NETWORK_DELAY_MS = 500;
 const DataContext = createContext(null);
 
-function delay(value) {
-  return new Promise((resolve) => setTimeout(() => resolve(value), NETWORK_DELAY_MS));
-}
-
-let idCounter = 1010;
-function nextId() {
-  idCounter += 1;
-  return `APP-${idCounter}`;
-}
-
-const COMBINING_MARKS_RE = new RegExp('[\\u0300-\\u036f]', 'g');
-
-function slugify(value) {
-  return String(value)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(COMBINING_MARKS_RE, '')
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-function generateTempPassword() {
-  return `Coop-${Math.random().toString(36).slice(2, 8)}`;
+// ApplicationPage's "Duration" field is free text (e.g. "6 months"), but the
+// backend's durationMonths is numeric (REQ-01). Extract the leading number
+// rather than restructuring that field into a number input.
+function extractMonths(duration) {
+  const match = String(duration).match(/\d+/);
+  return match ? Number(match[0]) : NaN;
 }
 
 export function DataProvider({ children }) {
-  const [records, setRecords] = useState(SEED_RECORDS);
-
   // ---- Public --------------------------------------------------------
 
+  // REQ-01/02/03: real submission to POST /api/applications (no auth). The
+  // backend stores file fields as URL strings and has no upload/storage of
+  // its own yet, so the filenames ApplicationPage already collects are sent
+  // as placeholder "URLs" — see the frontend-integration summary.
   async function submitApplication(payload) {
-    await delay();
-    const record = {
-      id: nextId(),
-      ...payload,
-      submittedAt: new Date().toISOString(),
-      applicationStatus: 'pending',
-      decisionAt: null,
-      username: null,
-      trainingDetails: null,
-      tracks: null,
-    };
-    setRecords((prev) => [record, ...prev]);
-    return record;
-  }
-
-  // ---- HR --------------------------------------------------------------
-  // HR has unscoped access by design (their role covers the whole database).
-
-  async function acceptApplication(id) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Application not found.');
-    if (record.applicationStatus !== 'pending') throw new Error('This application was already decided.');
-
-    const base = slugify(`${record.firstName}.${record.lastName}`) || slugify(record.firstName);
-    let username = base;
-    let suffix = 1;
-    while (authApi.usernameExists(username)) {
-      username = `${base}${suffix}`;
-      suffix += 1;
+    const durationMonths = extractMonths(payload.duration);
+    if (Number.isNaN(durationMonths)) {
+      throw new Error('Duration must include a number of months (e.g. "6 months").');
     }
-    const tempPassword = generateTempPassword();
-    authApi.registerTrainee({ username, password: tempPassword, name: `${record.firstName} ${record.lastName}` });
 
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              applicationStatus: 'accepted',
-              decisionAt: new Date().toISOString(),
-              username,
-              trainingDetails: makeBaseTrainingDetails(),
-              tracks: makeBaseTracks(),
-            }
-          : r
-      )
-    );
-    return { username, tempPassword };
+    const trainee = await apiRequest('/api/applications', {
+      method: 'POST',
+      auth: false,
+      body: {
+        fullName: `${payload.firstName} ${payload.lastName}`.trim(),
+        phone: payload.phone,
+        birthDate: payload.birthDate,
+        personalEmail: payload.personalEmail,
+        universityEmail: payload.universityEmail,
+        universityName: payload.universityName,
+        college: payload.college,
+        major: payload.major,
+        gpa: Number(payload.gpa),
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+        durationMonths,
+        nationality: payload.nationality,
+        nationalId: payload.nationalId,
+        bloodType: payload.bloodType,
+        signatureUrl: payload.signatureFileName,
+        personalImageUrl: payload.personalImageFileName,
+        universityTranscriptUrl: payload.transcriptFileName,
+        cvUrl: payload.cvFileName,
+        iban: payload.iban,
+        universityLetterUrl: payload.universityLetterFileName,
+        referralSource: payload.referralSource,
+        referringEmployeeId: payload.employeeReferralId || null,
+      },
+    });
+    return trainee;
   }
 
-  async function rejectApplication(id) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Application not found.');
-    if (record.applicationStatus !== 'pending') throw new Error('This application was already decided.');
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, applicationStatus: 'rejected', decisionAt: new Date().toISOString() } : r))
-    );
-  }
-
-  async function withdrawStudent(id, reason) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Student not found.');
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, applicationStatus: 'withdrawn', decisionAt: new Date().toISOString(), withdrawalReason: reason || null }
-          : r
-      )
-    );
-  }
-
-  async function requestCard(id, cardData) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Student not found.');
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              cardRequest: cardData,
-              cardRequestStatus: 'requested',
-              tracks: { ...r.tracks, card: { status: 'under_issuing', underIssuingAt: new Date().toISOString() } },
-            }
-          : r
-      )
-    );
-  }
-
-  async function assignToCoordinator(ids, payload) {
-    if (!ids || ids.length === 0) throw new Error('Select at least one student.');
-    await delay();
-    const assignedAt = new Date().toISOString();
-    setRecords((prev) =>
-      prev.map((r) => {
-        if (!ids.includes(r.id) || r.applicationStatus !== 'accepted') return r;
-        return {
-          ...r,
-          trainingDetails: {
-            ...r.trainingDetails,
-            branch: payload.branch || r.trainingDetails?.branch || 'Eastern',
-            businessLine: payload.businessLine || r.trainingDetails?.businessLine || null,
-            buildingNumber: payload.buildingNumber || r.trainingDetails?.buildingNumber || null,
-            floorNumber: payload.floorNumber || r.trainingDetails?.floorNumber || null,
-          },
-          tracks: {
-            ...r.tracks,
-            departmentAssignment: {
-              status: 'assigned',
-              department: payload.department,
-              coordinatorUsername: payload.coordinatorUsername,
-              coordinatorName: payload.coordinatorName,
-              assignedAt,
-            },
-          },
-        };
-      })
-    );
-  }
-
-  async function issueCertificate(id) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Student not found.');
-    if (!record.tracks?.training?.started || !record.tracks?.training?.completed) {
-      throw new Error('Training start and completion must be confirmed by the coordinator first.');
-    }
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, certificate: { status: 'issued', issuedAt: new Date().toISOString() } } }
-          : r
-      )
-    );
-  }
-
-  // ---- Training Coordinator ---------------------------------------------
-  // Every function below re-checks ownership against the trainee's assigned
-  // coordinator before mutating, so scoping is enforced here — not only by
-  // which records the UI happens to display.
-
-  function assertOwnedByCoordinator(id, coordinatorUsername) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Student not found.');
-    if (record.tracks?.departmentAssignment?.coordinatorUsername !== coordinatorUsername) {
-      throw new Error('This trainee is not assigned to you.');
-    }
-    return record;
-  }
-
-  async function requestCompanyAccount(id, coordinatorUsername) {
-    assertOwnedByCoordinator(id, coordinatorUsername);
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, accountCredentials: { status: 'under_issuing', underIssuingAt: new Date().toISOString() } } }
-          : r
-      )
-    );
-  }
-
-  async function requestDeskDevice(id, coordinatorUsername) {
-    assertOwnedByCoordinator(id, coordinatorUsername);
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, deskDevice: { status: 'requested', requestedAt: new Date().toISOString(), readyAt: null } } }
-          : r
-      )
-    );
-  }
-
-  async function markDeskReady(id, coordinatorUsername) {
-    assertOwnedByCoordinator(id, coordinatorUsername);
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, deskDevice: { ...r.tracks.deskDevice, status: 'ready', readyAt: new Date().toISOString() } } }
-          : r
-      )
-    );
-  }
-
-  async function assignDivision(id, payload, coordinatorUsername) {
-    assertOwnedByCoordinator(id, coordinatorUsername);
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              trainingDetails: {
-                ...r.trainingDetails,
-                buildingNumber: payload.buildingNumber || r.trainingDetails?.buildingNumber || null,
-                floorNumber: payload.floorNumber || r.trainingDetails?.floorNumber || null,
-              },
-              tracks: {
-                ...r.tracks,
-                divisionAssignment: {
-                  status: 'assigned',
-                  division: payload.division,
-                  managerName: payload.managerName,
-                  altSupervisorName: payload.altSupervisorName || null,
-                  assignedAt: new Date().toISOString(),
-                },
-              },
-            }
-          : r
-      )
-    );
-  }
-
-  async function confirmTrainingStarted(id, coordinatorUsername, date) {
-    assertOwnedByCoordinator(id, coordinatorUsername);
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) => {
-        if (r.id !== id) return r;
-        const startedAt = date ? new Date(date).toISOString() : new Date().toISOString();
-        return {
-          ...r,
-          tracks: {
-            ...r.tracks,
-            training: { ...r.tracks.training, started: true, startedAt, notStarted: false, notStartedAt: null },
-            contract: { ...r.tracks.contract, availableAt: r.tracks.contract.availableAt || startedAt },
-          },
-        };
-      })
-    );
-  }
-
-  async function confirmTrainingNotStarted(id, coordinatorUsername) {
-    assertOwnedByCoordinator(id, coordinatorUsername);
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, training: { ...r.tracks.training, notStarted: true, notStartedAt: new Date().toISOString() } } }
-          : r
-      )
-    );
-  }
-
-  async function confirmTrainingCompleted(id, coordinatorUsername, date) {
-    const record = assertOwnedByCoordinator(id, coordinatorUsername);
-    if (!record.tracks?.training?.started) throw new Error('Confirm the trainee started before confirming completion.');
-    await delay();
-    const completedAt = date ? new Date(date).toISOString() : new Date().toISOString();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, tracks: { ...r.tracks, training: { ...r.tracks.training, completed: true, completedAt } } } : r
-      )
-    );
-  }
-
-  // ---- Trainee -----------------------------------------------------------
-
-  async function signContract(id, { signedName }) {
-    const record = records.find((r) => r.id === id);
-    if (!record) throw new Error('Trainee record not found.');
-    const availableAt = record.tracks?.contract?.availableAt;
-    if (!availableAt || new Date(availableAt).getTime() > Date.now()) {
-      throw new Error('Your contract is not available to sign yet.');
-    }
-    await delay();
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, tracks: { ...r.tracks, contract: { ...r.tracks.contract, signed: true, signedAt: new Date().toISOString(), signedName } } }
-          : r
-      )
-    );
-  }
-
-  const value = useMemo(
-    () => ({
-      records,
-      submitApplication,
-      acceptApplication,
-      rejectApplication,
-      withdrawStudent,
-      requestCard,
-      assignToCoordinator,
-      issueCertificate,
-      requestCompanyAccount,
-      requestDeskDevice,
-      markDeskReady,
-      assignDivision,
-      confirmTrainingStarted,
-      confirmTrainingNotStarted,
-      confirmTrainingCompleted,
-      signContract,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [records]
-  );
+  const value = useMemo(() => ({ submitApplication }), []);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
@@ -354,56 +75,380 @@ function useDataStore() {
 }
 
 // ---- Role-scoped hooks. Pages should only ever import the hook for their
-// own role — Coordinator pages have no code path that reaches `records`
-// unfiltered. -----------------------------------------------------------
+// own role. -----------------------------------------------------------
 
 export function usePublicApplication() {
   const { submitApplication } = useDataStore();
   return { submitApplication };
 }
 
+// HR sees every trainee, unscoped (REQ-23).
+// Every mutation refetches afterward (refetch-on-load, per BACKEND_CONTEXT.md)
+// rather than optimistically patching local state.
 export function useHRData() {
-  const store = useDataStore();
-  return {
-    students: store.records,
-    acceptApplication: store.acceptApplication,
-    rejectApplication: store.rejectApplication,
-    withdrawStudent: store.withdrawStudent,
-    requestCard: store.requestCard,
-    assignToCoordinator: store.assignToCoordinator,
-    issueCertificate: store.issueCertificate,
-  };
-}
+  const [students, setStudents] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-export function useCoordinatorData() {
-  const store = useDataStore();
-  const { user } = useAuth();
-  const username = user?.username;
-  const students = useMemo(
-    () => store.records.filter((r) => r.tracks?.departmentAssignment?.coordinatorUsername === username),
-    [store.records, username]
-  );
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [studentsRes, departmentsRes] = await Promise.all([
+        apiRequest('/api/hr/students'),
+        apiRequest('/api/hr/departments'),
+      ]);
+      const byId = Object.fromEntries(departmentsRes.departments.map((d) => [d.id, d]));
+      setDepartments(departmentsRes.departments);
+      setStudents(adaptTrainees(studentsRes.students, byId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  async function acceptApplication(id) {
+    await apiRequest(`/api/hr/students/${id}/accept`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function rejectApplication(id) {
+    await apiRequest(`/api/hr/students/${id}/reject`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function withdrawStudent(id) {
+    await apiRequest(`/api/hr/students/${id}/withdraw`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function requestCard(id) {
+    // Real endpoint takes no body — it uses the trainee's own already-stored
+    // image/signature/name/national ID/nationality/blood type (REQ-21).
+    await apiRequest(`/api/hr/students/${id}/request-card`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function assignToCoordinator(ids, payload) {
+    if (!ids || ids.length === 0) throw new Error('Select at least one student.');
+    await apiRequest('/api/hr/students/assign-department', {
+      method: 'PATCH',
+      body: { studentIds: ids, departmentId: payload.departmentId },
+    });
+    await refetch();
+  }
+
+  async function issueCertificate(id) {
+    await apiRequest(`/api/hr/students/${id}/issue-certificate`, { method: 'PATCH' });
+    await refetch();
+  }
 
   return {
     students,
-    getStudent: (id) => students.find((s) => s.id === id) || null,
-    requestCompanyAccount: (id) => store.requestCompanyAccount(id, username),
-    requestDeskDevice: (id) => store.requestDeskDevice(id, username),
-    markDeskReady: (id) => store.markDeskReady(id, username),
-    assignDivision: (id, payload) => store.assignDivision(id, payload, username),
-    confirmTrainingStarted: (id, date) => store.confirmTrainingStarted(id, username, date),
-    confirmTrainingNotStarted: (id) => store.confirmTrainingNotStarted(id, username),
-    confirmTrainingCompleted: (id, date) => store.confirmTrainingCompleted(id, username, date),
+    departments,
+    loading,
+    error,
+    refetch,
+    acceptApplication,
+    rejectApplication,
+    withdrawStudent,
+    requestCard,
+    assignToCoordinator,
+    issueCertificate,
   };
 }
 
-export function useTraineeData() {
-  const store = useDataStore();
-  const { user } = useAuth();
-  const record = useMemo(() => store.records.find((r) => r.username === user?.username) || null, [store.records, user]);
+// Single-student detail view (REQ-24) — separate from useHRData's list because
+// GET /students returns a lighter "key details" summary (REQ-23) that doesn't
+// carry every field the profile page needs (phone, GPA, documents, etc.);
+// the detail endpoint returns the full record instead.
+export function useHRStudentDetail(id) {
+  const [student, setStudent] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [studentRes, departmentsRes] = await Promise.all([
+        apiRequest(`/api/hr/students/${id}`),
+        apiRequest('/api/hr/departments'),
+      ]);
+      const byId = Object.fromEntries(departmentsRes.departments.map((d) => [d.id, d]));
+      setDepartments(departmentsRes.departments);
+      setStudent(adaptTrainee(studentRes.student, byId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  async function acceptApplication() {
+    await apiRequest(`/api/hr/students/${id}/accept`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function rejectApplication() {
+    await apiRequest(`/api/hr/students/${id}/reject`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function withdrawStudent() {
+    await apiRequest(`/api/hr/students/${id}/withdraw`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function requestCard() {
+    await apiRequest(`/api/hr/students/${id}/request-card`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function assignToCoordinator(payload) {
+    await apiRequest('/api/hr/students/assign-department', {
+      method: 'PATCH',
+      body: { studentIds: [id], departmentId: payload.departmentId },
+    });
+    await refetch();
+  }
+
+  async function issueCertificate() {
+    await apiRequest(`/api/hr/students/${id}/issue-certificate`, { method: 'PATCH' });
+    await refetch();
+  }
 
   return {
-    record,
-    signContract: (payload) => store.signContract(record?.id, payload),
+    student,
+    departments,
+    loading,
+    error,
+    refetch,
+    acceptApplication,
+    rejectApplication,
+    withdrawStudent,
+    requestCard,
+    assignToCoordinator,
+    issueCertificate,
   };
+}
+
+// Coordinator is wired to the real backend — scoping (REQ-36) happens
+// server-side in coordinator.js via the JWT, not client-side filtering here.
+// Self-contained (own fetch/state), like useHRData. GET /trainees already
+// returns full records with the department relation nested directly (there's
+// no separate departments-list endpoint for this role the way HR has one),
+// so no departmentsById lookup is needed before adapting.
+//
+// markDeskReady/confirmTrainingStarted/confirmTrainingNotStarted from the old
+// mock have NO real backend equivalent — the real Coordinator actions are
+// request-account, request-desk-device, division, and confirm-training
+// (completion only, no separate "started" concept). Those three are dropped
+// here; see the profile/bulk-action pages for how their UI was adjusted.
+export function useCoordinatorData() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { trainees } = await apiRequest('/api/coordinator/trainees');
+      setStudents(adaptTrainees(trainees));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  async function requestCompanyAccount(id) {
+    await apiRequest(`/api/coordinator/trainees/${id}/request-account`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function requestDeskDevice(id) {
+    await apiRequest(`/api/coordinator/trainees/${id}/request-desk-device`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  async function assignDivision(id, payload) {
+    // Real endpoint (REQ-11) only accepts `division` — no manager/alt-supervisor
+    // concept exists in the schema (division is a plain string field).
+    await apiRequest(`/api/coordinator/trainees/${id}/division`, {
+      method: 'PATCH',
+      body: { division: payload.division },
+    });
+    await refetch();
+  }
+
+  async function confirmTrainingCompleted(id) {
+    await apiRequest(`/api/coordinator/trainees/${id}/confirm-training`, { method: 'PATCH' });
+    await refetch();
+  }
+
+  return {
+    students,
+    loading,
+    error,
+    refetch,
+    getStudent: (id) => students.find((s) => s.id === id) || null,
+    requestCompanyAccount,
+    requestDeskDevice,
+    assignDivision,
+    confirmTrainingCompleted,
+  };
+}
+
+// Trainee's own dashboard (REQ-04/05) — wired to the real, deliberately
+// minimal GET /status (milestone + a precomputed roadmap) and
+// GET /training-details. Neither endpoint returns a full raw trainee
+// record, so `record` here is synthesized: adaptTrainee() (the same
+// adapter HR/Coordinator use) is fed a minimal trainee-shaped object built
+// from what these two endpoints actually provide. Fields neither endpoint
+// supplies (cardStatus, trainingCompleted, certificateIssued) are
+// approximated from milestone position via milestoneReached() — safe
+// because REQ-04's own roadmap is itself just a milestone position, so
+// nothing here can show a step as done before the real milestone reaches
+// it. Narrow known gap: trainingCompleted is approximated as true only
+// once milestone reaches CERTIFICATE, so there's a brief real-world window
+// (Coordinator confirmed completion, HR hasn't issued the certificate yet)
+// where this lags what HR/Coordinator already see.
+export function useTraineeData() {
+  const { user } = useAuth();
+  const [status, setStatus] = useState(null);
+  const [trainingDetails, setTrainingDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [statusRes, detailsRes] = await Promise.all([
+        apiRequest('/api/trainee/status'),
+        apiRequest('/api/trainee/training-details'),
+      ]);
+      setStatus(statusRes);
+      setTrainingDetails(detailsRes);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  const record = useMemo(() => {
+    if (!status) return null;
+    const { milestone } = status;
+    const department = trainingDetails?.available
+      ? {
+          name: trainingDetails.department?.name,
+          branch: trainingDetails.department?.branch,
+          businessLine: trainingDetails.department?.businessLine,
+          buildingNumber: trainingDetails.department?.buildingNumber,
+          floorNumber: trainingDetails.department?.floorNumber,
+          coordinator: trainingDetails.coordinatorName ? { fullName: trainingDetails.coordinatorName } : null,
+        }
+      : null;
+
+    const synthetic = {
+      id: 'me',
+      // Neither endpoint returns the trainee's own name — reused from the
+      // logged-in session (AuthContext) instead, same as DashboardHeader does.
+      fullName: user?.name || '',
+      applicationStatus: 'ACCEPTED',
+      withdrawn: Boolean(status.withdrawn),
+      milestone,
+      cardStatus: milestoneReached({ milestone }, 'COMPANY_CARD') ? 'ISSUED' : 'NOT_REQUESTED',
+      cardRequestedAt: null,
+      cardIssuedAt: null,
+      trainingCompleted: milestone === 'CERTIFICATE',
+      trainingCompletedAt: null,
+      contractSigned: false,
+      contractSignedAt: null,
+      certificateIssued: milestone === 'CERTIFICATE',
+      certificateIssuedAt: null,
+      departmentId: department ? 'assigned' : null,
+      coordinatorId: department ? 'assigned' : null,
+      division: trainingDetails?.available ? trainingDetails.division : null,
+      department,
+      createdAt: new Date().toISOString(),
+      userId: 'me',
+    };
+    return adaptTrainee(synthetic);
+  }, [status, trainingDetails, user]);
+
+  return { record, loading, error, refetch };
+}
+
+// Contract (REQ-07/08) is standalone from the milestone roadmap (per
+// BACKEND_CONTEXT.md) and fetched separately — the dashboard/details/
+// certificate pages never need it, only the Contract page does.
+export function useTraineeContract() {
+  const [contract, setContract] = useState(null);
+  const [contractSigned, setContractSigned] = useState(false);
+  const [contractSignedAt, setContractSignedAt] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await apiRequest('/api/trainee/contract');
+      setContract(res.contract);
+      setContractSigned(res.contractSigned);
+      setContractSignedAt(res.contractSignedAt);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  async function signContract() {
+    await apiRequest('/api/trainee/contract/sign', { method: 'POST' });
+    await refetch();
+  }
+
+  return { contract, contractSigned, contractSignedAt, loading, error, signContract };
+}
+
+// REQ-09: certificate PDF download. Not a hook — an on-demand action used
+// directly by TraineeCertificatePage.
+export async function downloadTraineeCertificate() {
+  const { blob, filename } = await apiDownload('/api/trainee/certificate');
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename || 'certificate.pdf';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

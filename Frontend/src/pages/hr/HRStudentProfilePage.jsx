@@ -6,14 +6,13 @@ import StatusPill from '../../components/dashboard/StatusPill';
 import InfoField from '../../components/dashboard/InfoField';
 import TrackCard from '../../components/dashboard/TrackCard';
 import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
+import EmptyState from '../../components/dashboard/EmptyState';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
 import Button from '../../components/Button';
-import TextField from '../../components/form/TextField';
 import FormBanner from '../../components/form/FormBanner';
-import { useHRData } from '../../data/DataContext';
+import { useHRStudentDetail } from '../../data/DataContext';
 import { useNow, formatDate } from '../../utils/time';
 import { statusMeta } from '../../utils/statusMeta';
-import { COORDINATORS } from '../../data/mockData';
 import HR_NAV_ITEMS from './hrNavItems';
 import DepartmentAssignFields from './DepartmentAssignFields';
 import '../../components/dashboard/DashboardPage.css';
@@ -22,7 +21,8 @@ const ASSIGN_INITIAL = {
   departmentId: '',
   department: '',
   coordinatorUsername: '',
-  branch: 'Eastern',
+  coordinatorName: '',
+  branch: '',
   businessLine: '',
   buildingNumber: '',
   floorNumber: '',
@@ -31,9 +31,18 @@ const ASSIGN_INITIAL = {
 function HRStudentProfilePage() {
   const { id } = useParams();
   const now = useNow();
-  const { students, acceptApplication, rejectApplication, withdrawStudent, requestCard, assignToCoordinator, issueCertificate } =
-    useHRData();
-  const record = students.find((s) => s.id === id);
+  const {
+    student: record,
+    departments,
+    loading,
+    error: loadError,
+    acceptApplication,
+    rejectApplication,
+    withdrawStudent,
+    requestCard,
+    assignToCoordinator,
+    issueCertificate,
+  } = useHRStudentDetail(id);
 
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -41,9 +50,7 @@ function HRStudentProfilePage() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [cardOpen, setCardOpen] = useState(false);
 
-  const [withdrawReason, setWithdrawReason] = useState('');
   const [assignValues, setAssignValues] = useState(ASSIGN_INITIAL);
-  const [cardValues, setCardValues] = useState({ endDate: '' });
 
   const [busy, setBusy] = useState(false);
   const [dialogError, setDialogError] = useState('');
@@ -51,10 +58,19 @@ function HRStudentProfilePage() {
   const [certLoading, setCertLoading] = useState(false);
   const [certError, setCertError] = useState('');
 
-  if (!record) {
+  if (loading) {
+    return (
+      <DashboardShell navItems={HR_NAV_ITEMS}>
+        <EmptyState title="Loading student…" />
+      </DashboardShell>
+    );
+  }
+
+  if (loadError || !record) {
     return (
       <DashboardShell navItems={HR_NAV_ITEMS}>
         <SectionCard title="Student not found">
+          {loadError && <FormBanner tone="error">{loadError}</FormBanner>}
           <Link to="/app/hr">Back to students</Link>
         </SectionCard>
       </DashboardShell>
@@ -69,8 +85,8 @@ function HRStudentProfilePage() {
     setBusy(true);
     setDialogError('');
     try {
-      const result = await fn();
-      onDone?.(result);
+      await fn();
+      onDone?.();
     } catch (err) {
       setDialogError(err.message);
     } finally {
@@ -79,73 +95,59 @@ function HRStudentProfilePage() {
   };
 
   const handleAccept = () =>
-    runAction(
-      () => acceptApplication(record.id),
-      ({ username, tempPassword }) => {
-        setAcceptOpen(false);
-        setNotice({
-          tone: 'success',
-          text: `Accepted. COOP account created (username: ${username}, temporary password: ${tempPassword}). Acceptance email sent to ${record.personalEmail}; university notified at ${record.universityEmail}.`,
-        });
-      }
-    );
+    runAction(acceptApplication, () => {
+      setAcceptOpen(false);
+      // Not shown here: the temporary password. It's only ever emailed to the
+      // student (REQ-17) — the backend deliberately never returns it via the
+      // API, so there's nothing to display beyond confirming it was sent.
+      setNotice({
+        tone: 'success',
+        text: `Accepted. COOP account created and credentials emailed to ${record.personalEmail}; a separate acceptance notice was sent to ${record.universityEmail}.`,
+      });
+    });
 
   const handleReject = () =>
-    runAction(
-      () => rejectApplication(record.id),
-      () => {
-        setRejectOpen(false);
-        setNotice({ tone: 'info', text: `Application rejected. Notification email sent to ${record.personalEmail}.` });
-      }
-    );
+    runAction(rejectApplication, () => {
+      setRejectOpen(false);
+      setNotice({ tone: 'info', text: `Application rejected. Notification email sent to ${record.personalEmail}.` });
+    });
 
   const handleWithdraw = () =>
-    runAction(
-      () => withdrawStudent(record.id, withdrawReason),
-      () => {
-        setWithdrawOpen(false);
-        setNotice({ tone: 'info', text: `Training withdrawn. Notification email sent to ${record.personalEmail}.` });
-      }
-    );
+    runAction(withdrawStudent, () => {
+      setWithdrawOpen(false);
+      setNotice({ tone: 'info', text: `Training withdrawn. Notification email sent to ${record.personalEmail}.` });
+    });
 
   const handleAssign = () => {
-    if (!assignValues.departmentId || !assignValues.coordinatorUsername) {
-      setDialogError('Department and coordinator are required.');
+    if (!assignValues.departmentId) {
+      setDialogError('Department is required.');
       return;
     }
-    const coordinator = COORDINATORS.find((c) => c.username === assignValues.coordinatorUsername);
     runAction(
-      () => assignToCoordinator([record.id], { ...assignValues, coordinatorName: coordinator?.name }),
+      () => assignToCoordinator(assignValues),
       () => {
         setAssignOpen(false);
-        setNotice({ tone: 'success', text: `${record.firstName} assigned to ${coordinator?.name}.` });
+        setNotice({
+          tone: 'success',
+          text: `${record.firstName} assigned to ${assignValues.department}${
+            assignValues.coordinatorName ? ` (Coordinator: ${assignValues.coordinatorName})` : ''
+          }.`,
+        });
       }
     );
   };
 
   const handleRequestCard = () =>
-    runAction(
-      () =>
-        requestCard(record.id, {
-          personalImageFileName: record.personalImageFileName,
-          signatureFileName: record.signatureFileName,
-          name: `${record.firstName} ${record.lastName}`,
-          nationalId: record.nationalId,
-          endDate: cardValues.endDate || record.endDate,
-          nationality: record.nationality,
-          bloodType: record.bloodType,
-        }),
-      () => {
-        setCardOpen(false);
-        setNotice({ tone: 'success', text: 'Card request submitted to ISD.' });
-      }
-    );
+    runAction(requestCard, () => {
+      setCardOpen(false);
+      setNotice({ tone: 'success', text: 'Card request submitted to ISD.' });
+    });
 
   const handleIssueCertificate = async () => {
     setCertLoading(true);
     setCertError('');
     try {
-      await issueCertificate(record.id);
+      await issueCertificate();
       setNotice({ tone: 'success', text: 'Certificate issued.' });
     } catch (err) {
       setCertError(err.message);
@@ -199,10 +201,7 @@ function HRStudentProfilePage() {
           <FormBanner tone="error">Rejected on {formatDate(record.decisionAt)}.</FormBanner>
         )}
         {record.applicationStatus === 'withdrawn' && (
-          <FormBanner tone="error">
-            Training withdrawn on {formatDate(record.decisionAt)}
-            {record.withdrawalReason ? ` — ${record.withdrawalReason}` : ''}.
-          </FormBanner>
+          <FormBanner tone="error">Training withdrawn on {formatDate(record.decisionAt)}.</FormBanner>
         )}
 
         {isAccepted && (
@@ -221,8 +220,13 @@ function HRStudentProfilePage() {
               <div className="profile-action">
                 <h3>Request card from ISD</h3>
                 <p>Submits image, signature, name, national ID, nationality, and blood type.</p>
-                <Button variant="secondary" size="sm" onClick={() => setCardOpen(true)}>
-                  Request card
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setCardOpen(true)}
+                  disabled={record.cardRequestStatus === 'requested'}
+                >
+                  {record.cardRequestStatus === 'requested' ? 'Card already requested' : 'Request card'}
                 </Button>
               </div>
               <div className="profile-action">
@@ -258,15 +262,13 @@ function HRStudentProfilePage() {
         {isAccepted && (
           <SectionCard title="Training details">
             <div className="info-grid">
-              <InfoField label="Branch" value={record.trainingDetails.branch} />
-              <InfoField label="Business line" value={record.trainingDetails.businessLine} />
+              <InfoField label="Branch" value={record.trainingDetails?.branch} />
+              <InfoField label="Business line" value={record.trainingDetails?.businessLine} />
               <InfoField label="Department" value={record.tracks.departmentAssignment.department} />
               <InfoField label="Division" value={record.tracks.divisionAssignment.division} />
-              <InfoField label="Supervisor" value={record.tracks.divisionAssignment.managerName} />
-              <InfoField label="Alt. supervisor" value={record.tracks.divisionAssignment.altSupervisorName} />
               <InfoField label="Training coordinator" value={record.tracks.departmentAssignment.coordinatorName} />
-              <InfoField label="Building number" value={record.trainingDetails.buildingNumber} />
-              <InfoField label="Floor number" value={record.trainingDetails.floorNumber} />
+              <InfoField label="Building number" value={record.trainingDetails?.buildingNumber} />
+              <InfoField label="Floor number" value={record.trainingDetails?.floorNumber} />
             </div>
           </SectionCard>
         )}
@@ -287,11 +289,8 @@ function HRStudentProfilePage() {
             <InfoField label="Nationality" value={record.nationality} />
             <InfoField label="National ID" value={record.nationalId} />
             <InfoField label="Blood type" value={record.bloodType} />
-            <InfoField
-              label="How they heard about us"
-              value={{ employee_referral: 'Employee referral', manual_application: 'Manual application', university: 'From university' }[record.referralSource]}
-            />
-            {record.referralSource === 'employee_referral' && <InfoField label="Referring employee ID" value={record.employeeReferralId} />}
+            <InfoField label="How they heard about us" value={record.referralSource} />
+            {record.employeeReferralId && <InfoField label="Referring employee ID" value={record.employeeReferralId} />}
             <InfoField label="IBAN" value={record.iban} />
           </div>
           <div className="doc-list" style={{ marginTop: 'var(--space-5)' }}>
@@ -328,21 +327,14 @@ function HRStudentProfilePage() {
       <ConfirmDialog
         open={withdrawOpen}
         title="Withdraw this trainee's training?"
-        body="This notifies the student by email. You can add an internal note below (optional)."
+        body="This notifies the student by email and cannot be undone from this screen."
         confirmLabel="Withdraw"
         danger
         loading={busy}
         error={dialogError}
         onConfirm={handleWithdraw}
         onClose={() => setWithdrawOpen(false)}
-      >
-        <textarea
-          className="textarea-input"
-          placeholder="Reason (optional, internal use only)"
-          value={withdrawReason}
-          onChange={(e) => setWithdrawReason(e.target.value)}
-        />
-      </ConfirmDialog>
+      />
 
       <ConfirmDialog
         open={assignOpen}
@@ -354,7 +346,7 @@ function HRStudentProfilePage() {
         onConfirm={handleAssign}
         onClose={() => setAssignOpen(false)}
       >
-        <DepartmentAssignFields values={assignValues} onChange={setAssignValues} />
+        <DepartmentAssignFields values={assignValues} onChange={setAssignValues} departments={departments} />
       </ConfirmDialog>
 
       <ConfirmDialog
@@ -368,22 +360,13 @@ function HRStudentProfilePage() {
         onConfirm={handleRequestCard}
         onClose={() => setCardOpen(false)}
       >
-        <div className="profile-form">
-          <div className="info-grid">
-            <InfoField label="Name" value={`${record.firstName} ${record.lastName}`} />
-            <InfoField label="National ID" value={record.nationalId} />
-            <InfoField label="Nationality" value={record.nationality} />
-            <InfoField label="Blood type" value={record.bloodType} />
-            <InfoField label="Photo on file" value={record.personalImageFileName} />
-            <InfoField label="Signature on file" value={record.signatureFileName} />
-          </div>
-          <TextField
-            label="Card end date"
-            name="cardEndDate"
-            type="date"
-            value={cardValues.endDate || record.endDate}
-            onChange={(e) => setCardValues({ endDate: e.target.value })}
-          />
+        <div className="info-grid">
+          <InfoField label="Name" value={`${record.firstName} ${record.lastName}`} />
+          <InfoField label="National ID" value={record.nationalId} />
+          <InfoField label="Nationality" value={record.nationality} />
+          <InfoField label="Blood type" value={record.bloodType} />
+          <InfoField label="Photo on file" value={record.personalImageFileName} />
+          <InfoField label="Signature on file" value={record.signatureFileName} />
         </div>
       </ConfirmDialog>
     </DashboardShell>

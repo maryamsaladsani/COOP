@@ -1,28 +1,33 @@
 import SelectField from '../../components/form/SelectField';
-import TextField from '../../components/form/TextField';
-import { BRANCHES, COORDINATORS } from '../../data/mockData';
-import { DEPARTMENTS } from '../../data/departments';
+import InfoField from '../../components/dashboard/InfoField';
 
 // Shared by the bulk "Assign to DEPT" page and the per-student "Assign to
-// Training Coordinator" modal so both places auto-fill identically from the
-// same department record instead of drifting apart. `values`/`onChange`
-// follow the { departmentId, department, coordinatorUsername, branch,
-// businessLine, buildingNumber, floorNumber } shape both callers already use.
-function DepartmentAssignFields({ values, onChange }) {
+// Training Coordinator" modal. `departments` is the real backend list (see
+// GET /api/hr/departments) — HR picks one, and coordinator/branch/business
+// line/building/floor are then just DISPLAY of that department's own record,
+// not independently editable: the real assign-department endpoint (REQ-25)
+// only accepts a departmentId, and derives the coordinator from
+// Department.coordinatorId server-side. Department data itself is read-only
+// spreadsheet-sourced reference data (see BACKEND_CONTEXT.md) — HR was never
+// meant to edit branch/building/etc per-assignment, only pick a department.
+function DepartmentAssignFields({ values, onChange, departments }) {
   const handleDepartmentSelect = (departmentId) => {
-    const dept = DEPARTMENTS.find((d) => d.id === departmentId);
+    const dept = departments.find((d) => d.id === departmentId);
     if (!dept) return;
     onChange((v) => ({
       ...v,
       departmentId,
       department: dept.name,
-      coordinatorUsername: dept.trainingCoordinator,
+      coordinatorUsername: dept.coordinatorId,
+      coordinatorName: dept.coordinatorName,
       branch: dept.branch,
       businessLine: dept.businessLine,
       buildingNumber: dept.buildingNumber,
       floorNumber: dept.floorNumber,
     }));
   };
+
+  const selected = departments.find((d) => d.id === values.departmentId);
 
   return (
     <div className="profile-form">
@@ -31,54 +36,20 @@ function DepartmentAssignFields({ values, onChange }) {
         name="departmentId"
         required
         placeholder="Select department"
-        options={DEPARTMENTS.map((d) => ({ value: d.id, label: d.name }))}
+        options={departments.map((d) => ({ value: d.id, label: d.name }))}
         value={values.departmentId}
         onChange={(e) => handleDepartmentSelect(e.target.value)}
-        hint="Selecting a department auto-fills the fields below — you can still edit them."
+        hint="Branch, business line, building, floor, and coordinator come from the selected department and can't be edited here."
       />
-      <div className="profile-form__row">
-        <SelectField
-          label="Training Coordinator"
-          name="coordinatorUsername"
-          required
-          placeholder="Select coordinator"
-          options={COORDINATORS.map((c) => ({ value: c.username, label: c.name }))}
-          value={values.coordinatorUsername}
-          onChange={(e) => onChange((v) => ({ ...v, coordinatorUsername: e.target.value }))}
-        />
-        <SelectField
-          label="Branch"
-          name="branch"
-          options={BRANCHES.map((b) => ({ value: b, label: b }))}
-          value={values.branch}
-          onChange={(e) => onChange((v) => ({ ...v, branch: e.target.value }))}
-        />
-      </div>
-      <div className="profile-form__row">
-        <TextField
-          label="Business line"
-          name="businessLine"
-          hint="Optional"
-          value={values.businessLine}
-          onChange={(e) => onChange((v) => ({ ...v, businessLine: e.target.value }))}
-        />
-        <TextField
-          label="Building number"
-          name="buildingNumber"
-          hint="Optional"
-          value={values.buildingNumber}
-          onChange={(e) => onChange((v) => ({ ...v, buildingNumber: e.target.value }))}
-        />
-      </div>
-      <div className="profile-form__row">
-        <TextField
-          label="Floor number"
-          name="floorNumber"
-          hint="Optional"
-          value={values.floorNumber}
-          onChange={(e) => onChange((v) => ({ ...v, floorNumber: e.target.value }))}
-        />
-      </div>
+      {selected && (
+        <div className="info-grid">
+          <InfoField label="Training Coordinator" value={selected.coordinatorName || 'Not yet assigned'} />
+          <InfoField label="Branch" value={selected.branch} />
+          <InfoField label="Business line" value={selected.businessLine} />
+          <InfoField label="Building number" value={selected.buildingNumber} />
+          <InfoField label="Floor number" value={selected.floorNumber} />
+        </div>
+      )}
     </div>
   );
 }

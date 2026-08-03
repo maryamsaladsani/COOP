@@ -75,7 +75,8 @@ function SignUpPage() {
     setLoading(true);
     try {
       await authApi.signUp(values);
-      await setSession(values.username, values.password);
+      // Login is email/password (the backend has no username) — see mockAuth.js.
+      await setSession(values.email, values.password);
       navigate('/app');
     } catch (err) {
       setSubmitError(err.message);

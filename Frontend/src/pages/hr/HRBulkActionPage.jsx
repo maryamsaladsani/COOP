@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import StatusPill from '../../components/dashboard/StatusPill';
 import DataTable from '../../components/dashboard/DataTable';
+import EmptyState from '../../components/dashboard/EmptyState';
 import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
 import FormBanner from '../../components/form/FormBanner';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
 import { useHRData } from '../../data/DataContext';
-import { COORDINATORS } from '../../data/mockData';
 import HR_NAV_ITEMS from './hrNavItems';
 import HR_BULK_ACTIONS from './hrBulkActions';
 import getHRStudentColumns from './hrStudentColumns';
@@ -20,7 +20,8 @@ const ASSIGN_INITIAL = {
   departmentId: '',
   department: '',
   coordinatorUsername: '',
-  branch: 'Eastern',
+  coordinatorName: '',
+  branch: '',
   businessLine: '',
   buildingNumber: '',
   floorNumber: '',
@@ -44,10 +45,14 @@ function HRBulkActionPage() {
 
 function HRBulkActionView({ action }) {
   const hrData = useHRData();
-  const { students } = hrData;
+  const { students, departments, loading, error: loadError } = hrData;
+  const location = useLocation();
 
   const [search, setSearch] = useState('');
-  const [selectedIds, setSelectedIds] = useState([]);
+  // The Students Database page's "Assign to Coordinator" shortcut deep-links
+  // here with the rows it already had selected, instead of re-implementing
+  // the same assignment form a second time.
+  const [selectedIds, setSelectedIds] = useState(() => location.state?.preselectedIds || []);
   const [assignValues, setAssignValues] = useState(ASSIGN_INITIAL);
   const [reason, setReason] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -90,16 +95,17 @@ function HRBulkActionView({ action }) {
 
   const buildPayload = () => {
     if (action.fields === 'assign') {
-      const coordinatorName = COORDINATORS.find((c) => c.username === assignValues.coordinatorUsername)?.name;
-      return { ...assignValues, coordinatorName };
+      // The real endpoint (REQ-25) only accepts departmentId — it derives the
+      // coordinator server-side from the department's own record.
+      return { departmentId: assignValues.departmentId };
     }
     if (action.fields === 'reason') return { reason: reason || undefined };
     return undefined;
   };
 
   const validateFields = () => {
-    if (action.fields === 'assign' && (!assignValues.departmentId || !assignValues.coordinatorUsername)) {
-      return 'Department and coordinator are required.';
+    if (action.fields === 'assign' && !assignValues.departmentId) {
+      return 'Department is required.';
     }
     return '';
   };
@@ -125,24 +131,45 @@ function HRBulkActionView({ action }) {
   const runAction = async () => {
     setSubmitting(true);
     const payload = buildPayload();
-    const outcomes = [];
 
-    for (const id of selectedIds) {
-      const record = students.find((s) => s.id === id);
-      const name = record ? `${record.firstName} ${record.lastName}` : id;
-      if (!record || !action.isApplicable(record)) {
-        outcomes.push({ id, name, status: 'error', message: record ? action.skipReason(record) : 'Student not found.' });
-        continue;
-      }
+    if (action.isBatchOperation) {
+      // Real batch endpoint (REQ-25): every id goes in ONE request and is
+      // validated/rejected atomically together. One call, not a loop — a
+      // per-trainee loop here would silently defeat that atomicity (each
+      // call would succeed or fail independently instead of all-or-nothing).
+      const applicable = selectedIds
+        .map((id) => students.find((s) => s.id === id))
+        .filter((record) => record && action.isApplicable(record));
+      const toResult = (status, message) =>
+        applicable.map((r) => ({ id: r.id, name: `${r.firstName} ${r.lastName}`, status, message }));
+
       try {
-        await action.apply(hrData, record, payload);
-        outcomes.push({ id, name, status: 'success', message: 'Done.' });
+        await action.apply(hrData, applicable, payload);
+        setResults(toResult('success', 'Done.'));
       } catch (err) {
-        outcomes.push({ id, name, status: 'error', message: err.message });
+        // The whole batch was rejected together — every selected trainee in
+        // it shows the same failure, not a silent partial/no-op.
+        setResults(toResult('error', err.message));
       }
+    } else {
+      const outcomes = [];
+      for (const id of selectedIds) {
+        const record = students.find((s) => s.id === id);
+        const name = record ? `${record.firstName} ${record.lastName}` : id;
+        if (!record || !action.isApplicable(record)) {
+          outcomes.push({ id, name, status: 'error', message: record ? action.skipReason(record) : 'Student not found.' });
+          continue;
+        }
+        try {
+          await action.apply(hrData, record, payload);
+          outcomes.push({ id, name, status: 'success', message: 'Done.' });
+        } catch (err) {
+          outcomes.push({ id, name, status: 'error', message: err.message });
+        }
+      }
+      setResults(outcomes);
     }
 
-    setResults(outcomes);
     setSubmitting(false);
     setSelectedIds([]);
     setConfirmOpen(false);
@@ -227,22 +254,28 @@ function HRBulkActionView({ action }) {
             </div>
           )}
 
-          <DataTable
-            columns={columns}
-            rows={filteredRows}
-            pageSize={100}
-            selectable
-            selectedIds={selectedIds}
-            onSelectedChange={setSelectedIds}
-            isRowSelectable={isRowSelectable}
-            emptyTitle="No eligible trainees"
-            emptyBody="No trainees currently qualify for this action."
-          />
+          {loading && <EmptyState title="Loading trainees…" />}
+          {!loading && loadError && (
+            <FormBanner tone="error">Couldn't load trainees: {loadError}</FormBanner>
+          )}
+          {!loading && !loadError && (
+            <DataTable
+              columns={columns}
+              rows={filteredRows}
+              pageSize={100}
+              selectable
+              selectedIds={selectedIds}
+              onSelectedChange={setSelectedIds}
+              isRowSelectable={isRowSelectable}
+              emptyTitle="No eligible trainees"
+              emptyBody="No trainees currently qualify for this action."
+            />
+          )}
         </SectionCard>
 
         {action.fields === 'assign' && (
           <SectionCard title="Assignment details" subtitle="Applied to every selected trainee.">
-            <DepartmentAssignFields values={assignValues} onChange={setAssignValues} />
+            <DepartmentAssignFields values={assignValues} onChange={setAssignValues} departments={departments} />
           </SectionCard>
         )}
 

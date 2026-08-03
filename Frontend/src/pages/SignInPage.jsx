@@ -6,18 +6,24 @@ import PasswordField from '../components/form/PasswordField';
 import Button from '../components/Button';
 import FormBanner from '../components/form/FormBanner';
 import { useAuth } from '../context/AuthContext';
-import { isRequired, runValidators } from '../utils/validation';
+import { isRequired, isValidEmail, runValidators } from '../utils/validation';
 import './SignInPage.css';
 
+// The backend has no separate username — accounts are keyed by email
+// (REQ-29/30/31 login is unified across roles by email/password).
 const RULES = {
-  username: (value) => (isRequired(value) ? null : 'Enter your username.'),
+  email: (value) => {
+    if (!isRequired(value)) return 'Enter your email.';
+    if (!isValidEmail(value)) return 'Enter a valid email address.';
+    return null;
+  },
   password: (value) => (isRequired(value) ? null : 'Enter your password.'),
 };
 
 function SignInPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [values, setValues] = useState({ username: '', password: '' });
+  const [values, setValues] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +42,7 @@ function SignInPage() {
 
     setLoading(true);
     try {
-      await login(values.username, values.password);
+      await login(values.email, values.password);
       navigate('/app');
     } catch (err) {
       setSubmitError(err.message);
@@ -62,13 +68,14 @@ function SignInPage() {
       )}
       <form onSubmit={handleSubmit} noValidate>
         <TextField
-          label="Username"
-          name="username"
-          autoComplete="username"
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
           required
-          value={values.username}
-          onChange={handleChange('username')}
-          error={errors.username}
+          value={values.email}
+          onChange={handleChange('email')}
+          error={errors.email}
         />
         <div className="sign-in__password-row">
           <PasswordField

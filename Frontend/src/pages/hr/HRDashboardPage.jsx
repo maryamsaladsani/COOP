@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import DataTable from '../../components/dashboard/DataTable';
-import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
+import EmptyState from '../../components/dashboard/EmptyState';
+import FormBanner from '../../components/form/FormBanner';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
-import SelectField from '../../components/form/SelectField';
 import { useHRData } from '../../data/DataContext';
-import { BRANCHES, COORDINATORS } from '../../data/mockData';
 import HR_NAV_ITEMS from './hrNavItems';
 import getHRStudentColumns from './hrStudentColumns';
 import '../../components/dashboard/DashboardPage.css';
@@ -28,18 +27,12 @@ function matchesFilter(record, filter) {
   return record.applicationStatus === filter;
 }
 
-const ASSIGN_INITIAL = { department: '', coordinatorUsername: '', branch: 'Eastern', businessLine: '', buildingNumber: '', floorNumber: '' };
-
 function HRDashboardPage() {
-  const { students, assignToCoordinator } = useHRData();
+  const { students, loading, error } = useHRData();
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
-  const [assignOpen, setAssignOpen] = useState(false);
-  const [assignValues, setAssignValues] = useState(ASSIGN_INITIAL);
-  const [assignError, setAssignError] = useState('');
-  const [assignLoading, setAssignLoading] = useState(false);
 
   const pendingCount = students.filter((s) => s.applicationStatus === 'pending').length;
   const activeCount = students.filter((s) => s.applicationStatus === 'accepted').length;
@@ -58,31 +51,6 @@ function HRDashboardPage() {
   }, [students, filter, search]);
 
   const columns = getHRStudentColumns();
-
-  const handleOpenAssign = () => {
-    setAssignValues(ASSIGN_INITIAL);
-    setAssignError('');
-    setAssignOpen(true);
-  };
-
-  const handleAssignSubmit = async () => {
-    if (!assignValues.department.trim() || !assignValues.coordinatorUsername) {
-      setAssignError('Department and coordinator are required.');
-      return;
-    }
-    const coordinator = COORDINATORS.find((c) => c.username === assignValues.coordinatorUsername);
-    setAssignLoading(true);
-    setAssignError('');
-    try {
-      await assignToCoordinator(selectedIds, { ...assignValues, coordinatorName: coordinator?.name });
-      setAssignOpen(false);
-      setSelectedIds([]);
-    } catch (err) {
-      setAssignError(err.message);
-    } finally {
-      setAssignLoading(false);
-    }
-  };
 
   return (
     <DashboardShell navItems={HR_NAV_ITEMS}>
@@ -138,89 +106,32 @@ function HRDashboardPage() {
           {filter === 'accepted' && selectedIds.length > 0 && (
             <div className="dash-toolbar__batch" style={{ marginBottom: 'var(--space-4)' }}>
               <span className="dash-toolbar__batch-count">{selectedIds.length} selected</span>
-              <Button variant="primary" size="sm" onClick={handleOpenAssign}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/app/hr/bulk/assign', { state: { preselectedIds: selectedIds } })}
+              >
                 Assign to Coordinator
               </Button>
             </div>
           )}
 
-          <DataTable
-            columns={columns}
-            rows={filteredRows}
-            selectable={filter === 'accepted'}
-            selectedIds={selectedIds}
-            onSelectedChange={setSelectedIds}
-            onRowClick={(row) => navigate(`/app/hr/students/${row.id}`)}
-            emptyTitle="No students match this view"
-            emptyBody="Try a different filter or search term."
-          />
+          {loading && <EmptyState title="Loading students…" />}
+          {!loading && error && <FormBanner tone="error">Couldn't load students: {error}</FormBanner>}
+          {!loading && !error && (
+            <DataTable
+              columns={columns}
+              rows={filteredRows}
+              selectable={filter === 'accepted'}
+              selectedIds={selectedIds}
+              onSelectedChange={setSelectedIds}
+              onRowClick={(row) => navigate(`/app/hr/students/${row.id}`)}
+              emptyTitle="No students match this view"
+              emptyBody="Try a different filter or search term."
+            />
+          )}
         </SectionCard>
       </div>
-
-      <ConfirmDialog
-        open={assignOpen}
-        title="Assign to Training Coordinator"
-        body={`Assigning ${selectedIds.length} student${selectedIds.length === 1 ? '' : 's'}. This sets their department and coordinator; branch, business line, building, and floor are optional.`}
-        confirmLabel="Assign"
-        size="md"
-        loading={assignLoading}
-        error={assignError}
-        onConfirm={handleAssignSubmit}
-        onClose={() => setAssignOpen(false)}
-      >
-        <div className="profile-form">
-          <div className="profile-form__row">
-            <TextField
-              label="Department"
-              name="department"
-              required
-              value={assignValues.department}
-              onChange={(e) => setAssignValues((v) => ({ ...v, department: e.target.value }))}
-            />
-            <SelectField
-              label="Training Coordinator"
-              name="coordinatorUsername"
-              required
-              placeholder="Select coordinator"
-              options={COORDINATORS.map((c) => ({ value: c.username, label: c.name }))}
-              value={assignValues.coordinatorUsername}
-              onChange={(e) => setAssignValues((v) => ({ ...v, coordinatorUsername: e.target.value }))}
-            />
-          </div>
-          <div className="profile-form__row">
-            <SelectField
-              label="Branch"
-              name="branch"
-              options={BRANCHES.map((b) => ({ value: b, label: b }))}
-              value={assignValues.branch}
-              onChange={(e) => setAssignValues((v) => ({ ...v, branch: e.target.value }))}
-            />
-            <TextField
-              label="Business line"
-              name="businessLine"
-              hint="Optional"
-              value={assignValues.businessLine}
-              onChange={(e) => setAssignValues((v) => ({ ...v, businessLine: e.target.value }))}
-            />
-          </div>
-          <div className="profile-form__row">
-            <TextField
-              label="Building number"
-              name="buildingNumber"
-              hint="Optional"
-              value={assignValues.buildingNumber}
-              onChange={(e) => setAssignValues((v) => ({ ...v, buildingNumber: e.target.value }))}
-            />
-            <TextField
-              label="Floor number"
-              name="floorNumber"
-              hint="Optional"
-              value={assignValues.floorNumber}
-              onChange={(e) => setAssignValues((v) => ({ ...v, floorNumber: e.target.value }))}
-            />
-          </div>
-        </div>
-      </ConfirmDialog>
     </DashboardShell>
   );
 }

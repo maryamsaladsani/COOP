@@ -176,12 +176,11 @@ function ApplicationPage() {
                 <TextField label="Phone" name="phone" autoComplete="tel" required placeholder="+966 5X XXX XXXX" value={values.phone} onChange={handleChange('phone')} error={errors.phone} />
                 <TextField label="Birth date" name="birthDate" type="date" required value={values.birthDate} onChange={handleChange('birthDate')} error={errors.birthDate} />
                 <TextField label="Personal email" name="personalEmail" type="email" autoComplete="email" required value={values.personalEmail} onChange={handleChange('personalEmail')} error={errors.personalEmail} />
-                <TextField label="Nationality" name="nationality" required value={values.nationality} onChange={handleChange('nationality')} error={errors.nationality} />
                 <SelectField
                     label="Nationality"
                     name="nationality"
                     required
-                    placeholder="Saudi Arabia"
+                    placeholder="Select nationality"
                     options={NATIONALITY_OPTIONS.map((c) => ({ value: c.name, label: c.name }))}                    value={values.nationality}
                     onChange={handleChange('nationality')}
                     error={errors.nationality}

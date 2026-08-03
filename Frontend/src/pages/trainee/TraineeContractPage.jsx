@@ -3,34 +3,47 @@ import trainingContract from '../../data/Mock_Training_Contract_COOP.pdf';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import StatusPill from '../../components/dashboard/StatusPill';
+import EmptyState from '../../components/dashboard/EmptyState';
 import Button from '../../components/Button';
 import TextField from '../../components/form/TextField';
 import FormBanner from '../../components/form/FormBanner';
 import TRAINEE_NAV_ITEMS from './TraineeNavItems';
-import { useTraineeData } from '../../data/DataContext';
+import { useTraineeData, useTraineeContract } from '../../data/DataContext';
 import { formatDate } from '../../utils/time';
 import './TraineeDashboard.css';
 
 
 function TraineeContractPage() {
-  const { record, signContract } = useTraineeData();
+  const { record, loading: recordLoading } = useTraineeData();
+  const { contractSigned, contractSignedAt, loading: contractLoading, error: contractError, signContract } = useTraineeContract();
   const [agreed, setAgreed] = useState(false);
   const [signedName, setSignedName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (!record) {
+  if (recordLoading || contractLoading) {
     return (
       <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
-        <SectionCard title="No record found">
-          <p>We couldn't find your trainee record.</p>
+        <EmptyState title="Loading your contract…" />
+      </DashboardShell>
+    );
+  }
+
+  if (contractError || !record) {
+    return (
+      <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
+        <SectionCard title="Couldn't load your contract">
+          {contractError && <FormBanner tone="error">{contractError}</FormBanner>}
         </SectionCard>
       </DashboardShell>
     );
   }
 
-  const { contract } = record.tracks;
-  const isAvailable = Boolean(contract.availableAt) && new Date(contract.availableAt).getTime() <= Date.now();
+  // REQ-07 depends only on REQ-15/16 (the account existing) — reaching this
+  // page at all means that's true, so the contract is always available here
+  // (unlike the old mock, which additionally gated on the coordinator
+  // confirming training had started — that extra gate wasn't in the spec).
+  const isAvailable = true;
 
   const handleSign = async () => {
     setError('');
@@ -44,7 +57,7 @@ function TraineeContractPage() {
     }
     setLoading(true);
     try {
-      await signContract({ signedName: signedName.trim() });
+      await signContract();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,7 +76,7 @@ function TraineeContractPage() {
         <SectionCard
           title="Agreement"
           actions={
-            contract.signed ? (
+            contractSigned ? (
               <StatusPill tone="complete" label="Signed" />
             ) : isAvailable ? (
               <StatusPill tone="progress" label="Ready to sign" />
@@ -101,13 +114,13 @@ function TraineeContractPage() {
         </SectionCard>
 
         <SectionCard title="Sign contract digitally">
-          {contract.signed ? (
+          {contractSigned ? (
             <FormBanner tone="success">
-              Signed by {contract.signedName} on {formatDate(contract.signedAt)}.
+              Signed by {record.firstName} {record.lastName} on {formatDate(contractSignedAt)}.
             </FormBanner>
           ) : !isAvailable ? (
             <FormBanner tone="info">
-              Your contract becomes available to sign once your Training Coordinator confirms you've started training.
+              Your contract becomes available to sign once your account is set up.
             </FormBanner>
           ) : (
             <div className="contract-sign">

@@ -3,6 +3,8 @@ import SectionCard from '../../components/dashboard/SectionCard';
 import TrackCard from '../../components/dashboard/TrackCard';
 import MilestoneRoadmap from '../../components/dashboard/MilestoneRoadmap';
 import InfoField from '../../components/dashboard/InfoField';
+import EmptyState from '../../components/dashboard/EmptyState';
+import FormBanner from '../../components/form/FormBanner';
 import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
 import { useTraineeData } from '../../data/DataContext';
@@ -11,14 +13,22 @@ import './TraineeDashboard.css';
 
 
 function TraineeDashboardPage() {
-  const { record } = useTraineeData();
+  const { record, loading, error } = useTraineeData();
   const now = useNow();
 
-  if (!record) {
+  if (loading) {
+    return (
+      <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
+        <EmptyState title="Loading your onboarding status…" />
+      </DashboardShell>
+    );
+  }
+
+  if (error || !record) {
     return (
       <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
         <SectionCard title="No record found">
-          <p>We couldn't find your trainee record. Contact HR if this looks wrong.</p>
+          {error ? <FormBanner tone="error">{error}</FormBanner> : <p>We couldn't find your trainee record. Contact HR if this looks wrong.</p>}
         </SectionCard>
       </DashboardShell>
     );
@@ -47,21 +57,15 @@ function TraineeDashboardPage() {
 
         <SectionCard title="Training details" subtitle="Fields populate as HR and your coordinator complete each step.">
           <div className="info-grid">
-            <InfoField label="Branch" value={trainingDetails.branch} />
-            <InfoField label="Business line" value={trainingDetails.businessLine} />
+            <InfoField label="Branch" value={trainingDetails?.branch} />
+            <InfoField label="Business line" value={trainingDetails?.businessLine} />
             <InfoField label="Department" value={tracks.departmentAssignment.department} />
             <InfoField label="Division" value={tracks.divisionAssignment.division} />
-            <InfoField label="Supervisor" value={tracks.divisionAssignment.managerName} />
-            <InfoField label="Alternative supervisor" value={tracks.divisionAssignment.altSupervisorName} />
             <InfoField label="Training coordinator" value={tracks.departmentAssignment.coordinatorName} />
-            <InfoField label="Building number" value={trainingDetails.buildingNumber} />
-            <InfoField label="Floor number" value={trainingDetails.floorNumber} />
+            <InfoField label="Building number" value={trainingDetails?.buildingNumber} />
+            <InfoField label="Floor number" value={trainingDetails?.floorNumber} />
           </div>
         </SectionCard>
-
-  
-
- 
       </div>
     </DashboardShell>
   );

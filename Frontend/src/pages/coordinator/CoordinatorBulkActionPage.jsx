@@ -4,6 +4,7 @@ import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import StatusPill from '../../components/dashboard/StatusPill';
 import DataTable from '../../components/dashboard/DataTable';
+import EmptyState from '../../components/dashboard/EmptyState';
 import FormBanner from '../../components/form/FormBanner';
 import TextField from '../../components/form/TextField';
 import SelectField from '../../components/form/SelectField';
@@ -14,7 +15,9 @@ import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import BULK_ACTIONS from './bulkActions';
 import './CoordinatorBulkAction.css';
 
-const DIVISION_INITIAL = { division: '', managerName: '', altSupervisorName: '' };
+// Real endpoint (REQ-11) only accepts a division name — no manager/alt-supervisor
+// concept exists in the schema (see bulkActions.jsx and useCoordinatorData).
+const DIVISION_INITIAL = { division: '' };
 
 // Route-level wrapper: /app/coordinator/bulk/:actionType matches the same
 // <Route> element regardless of which action is selected, so React Router
@@ -36,12 +39,11 @@ function CoordinatorBulkActionPage() {
 
 function CoordinatorBulkActionView({ action }) {
   const coordinatorData = useCoordinatorData();
-  const { students } = coordinatorData;
+  const { students, loading, error: loadError } = coordinatorData;
 
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [divisionValues, setDivisionValues] = useState(DIVISION_INITIAL);
-  const [date, setDate] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState(null);
@@ -82,14 +84,13 @@ function CoordinatorBulkActionView({ action }) {
 
   const buildPayload = () => {
     if (action.fields === 'division') return divisionValues;
-    if (action.fields === 'date') return { date: date || undefined };
     return undefined;
   };
 
   const validate = () => {
     if (selectedCount === 0) return 'Select at least one student.';
-    if (action.fields === 'division' && (!divisionValues.division || !divisionValues.managerName.trim())) {
-      return 'Division and manager name are required.';
+    if (action.fields === 'division' && !divisionValues.division) {
+      return 'Division is required.';
     }
     return '';
   };
@@ -161,17 +162,21 @@ function CoordinatorBulkActionView({ action }) {
               />
             </div>
           </div>
-          <DataTable
-            columns={columns}
-            rows={filteredRows}
-            pageSize={50}
-            selectable
-            selectedIds={selectedIds}
-            onSelectedChange={setSelectedIds}
-            isRowSelectable={(row) => action.isApplicable(row)}
-            emptyTitle="No students match this search"
-            emptyBody="Try a different search term."
-          />
+          {loading && <EmptyState title="Loading students…" />}
+          {!loading && loadError && <FormBanner tone="error">Couldn't load students: {loadError}</FormBanner>}
+          {!loading && !loadError && (
+            <DataTable
+              columns={columns}
+              rows={filteredRows}
+              pageSize={50}
+              selectable
+              selectedIds={selectedIds}
+              onSelectedChange={setSelectedIds}
+              isRowSelectable={(row) => action.isApplicable(row)}
+              emptyTitle="No students match this search"
+              emptyBody="Try a different search term."
+            />
+          )}
         </SectionCard>
 
         {action.fields === 'division' && (
@@ -184,29 +189,9 @@ function CoordinatorBulkActionView({ action }) {
                 placeholder="Select division"
                 options={DIVISIONS.map((d) => ({ value: d, label: d }))}
                 value={divisionValues.division}
-                onChange={(e) => setDivisionValues((v) => ({ ...v, division: e.target.value }))}
-              />
-              <TextField
-                label="Manager name"
-                name="managerName"
-                required
-                value={divisionValues.managerName}
-                onChange={(e) => setDivisionValues((v) => ({ ...v, managerName: e.target.value }))}
-              />
-              <TextField
-                label="Alternative supervisor"
-                name="altSupervisorName"
-                hint="Optional"
-                value={divisionValues.altSupervisorName}
-                onChange={(e) => setDivisionValues((v) => ({ ...v, altSupervisorName: e.target.value }))}
+                onChange={(e) => setDivisionValues({ division: e.target.value })}
               />
             </div>
-          </SectionCard>
-        )}
-
-        {action.fields === 'date' && (
-          <SectionCard title="Date" subtitle="Optional — defaults to today for every selected student.">
-            <TextField label="Date" name="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </SectionCard>
         )}
 

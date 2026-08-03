@@ -5,75 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cd04865d-7652-4dea-8392-2277140fcd10" name="Changes" comment="Testing a React App">
-      <change afterPath="$PROJECT_DIR$/.agents/skills/design-taste-frontend/SKILL.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.agents/skills/frontend-design/LICENSE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.agents/skills/frontend-design/SKILL.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.claude/skills/design-taste-frontend" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/public/assets/coopLogo.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/App.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/App.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/.Rhistory" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Button.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Button.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Footer.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Footer.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Logo.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Logo.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/PublicHeader.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/PublicHeader.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/RequireAuth.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/auth/AuthShell.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/auth/AuthShell.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/FormBanner.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/PasswordField.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/PasswordStrengthMeter.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/SelectField.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/form/TextField.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/DevelopedBy.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/DevelopedBy.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/Hero.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/Hero.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/RoleFlow.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/RoleFlow.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/StageFlowPreview.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/StageFlowPreview.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhatIsCoop.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhatIsCoop.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhyCoop.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/landing/WhyCoop.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/context/AuthContext.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/data/mockAuth.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/index.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/AppHome.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/AppHome.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/ForgotPasswordPage.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/ForgotPasswordPage.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/LandingPage.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignInPage.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignInPage.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignUpPage.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/SignUpPage.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/styles/.Rhistory" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/utils/validation.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/public/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/public/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/public/logo192.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/public/logo512.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/public/manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/public/robots.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/public/robots.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/App.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/App.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/App.test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/index.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/logo.svg" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/logo.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/reportWebVitals.js" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/reportWebVitals.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CoopApp/src/setupTests.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,6 +85,9 @@
       <workItem from="1783945375919" duration="1870000" />
       <workItem from="1784013049094" duration="16000" />
       <workItem from="1784013082996" duration="308000" />
+      <workItem from="1785406044120" duration="22000" />
+      <workItem from="1785406150835" duration="21000" />
+      <workItem from="1785406177474" duration="39000" />
     </task>
     <task id="LOCAL-00001" summary="Test Push">
       <option name="closed" value="true" />

@@ -23,32 +23,35 @@ const HR_BULK_ACTIONS = {
     confirmBody: (n) => `Submits photo, signature, name, national ID, nationality, and blood type for ${n} selected trainee${n === 1 ? '' : 's'}.`,
     isApplicable: (record) => record.applicationStatus === 'accepted',
     skipReason: () => 'Application is not an active trainee.',
-    apply: (hrData, record) =>
-      hrData.requestCard(record.id, {
-        personalImageFileName: record.personalImageFileName,
-        signatureFileName: record.signatureFileName,
-        name: `${record.firstName} ${record.lastName}`,
-        nationalId: record.nationalId,
-        endDate: record.endDate,
-        nationality: record.nationality,
-        bloodType: record.bloodType,
-      }),
+    // Real endpoint (REQ-21) takes no body — it submits the trainee's own
+    // already-stored image/signature/name/national ID/nationality/blood type.
+    apply: (hrData, record) => hrData.requestCard(record.id),
   },
   assign: {
     key: 'assign',
     icon: <DepartmentIcon />,
     title: 'Assign to Coordinator',
-    description: 'Sets the same department, branch, and Training Coordinator for every selected trainee.',
+    description: 'Sets the same department and Training Coordinator for every selected trainee.',
     submitLabel: 'Assign',
     fields: 'assign',
     needsConfirm: true,
     danger: false,
     confirmTitle: 'Assign to Training Coordinator?',
-    confirmBody: (n) =>
-      `Assigning ${n} trainee${n === 1 ? '' : 's'}. This sets their department and coordinator; branch, business line, building, and floor are optional.`,
+    confirmBody: (n) => `Assigning ${n} trainee${n === 1 ? '' : 's'} to the selected department.`,
+    // The real endpoint (REQ-25) is a genuine batch operation — all selected
+    // studentIds go in ONE request and are validated/rejected atomically
+    // together (if any one trainee isn't accepted, the whole batch 409s,
+    // none of them get assigned). isBatchOperation tells HRBulkActionPage to
+    // call `apply` once with every applicable record, instead of looping
+    // per-trainee like the other actions below (whose real endpoints really
+    // are single-trainee operations).
+    //
+    // Card Request and Department Assignment are independent HR actions —
+    // this does NOT require the Company Card milestone; only acceptance.
+    isBatchOperation: true,
     isApplicable: (record) => record.applicationStatus === 'accepted',
     skipReason: () => 'Application is not an active trainee.',
-    apply: (hrData, record, payload) => hrData.assignToCoordinator([record.id], payload),
+    apply: (hrData, records, payload) => hrData.assignToCoordinator(records.map((r) => r.id), payload),
   },
   certificate: {
     key: 'certificate',

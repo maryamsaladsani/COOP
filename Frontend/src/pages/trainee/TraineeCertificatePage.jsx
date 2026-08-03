@@ -1,51 +1,50 @@
+import { useState } from 'react';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
+import EmptyState from '../../components/dashboard/EmptyState';
 import Button from '../../components/Button';
-import { useTraineeData } from '../../data/DataContext';
-import { formatDate } from '../../utils/time';
+import FormBanner from '../../components/form/FormBanner';
+import { useTraineeData, downloadTraineeCertificate } from '../../data/DataContext';
 import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import './TraineeDashboard.css';
 
 
-function handleCertificateDownload(record) {
-  const content = `Certificate of Completion
-
-This certifies that ${record.firstName} ${record.lastName} has completed the Saudi Energy Coordinated Onboarding & Operations Program.
-
-Division: ${record.tracks.divisionAssignment.division}
-Issued: ${formatDate(record.tracks.certificate.issuedAt)}`;
-
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-
-  link.href = url;
-  link.download = `${record.firstName}-${record.lastName}-certificate.txt`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  URL.revokeObjectURL(url);
-}
-
 function TraineeCertificatePage() {
-  const { record } = useTraineeData();
+  const { record, loading, error } = useTraineeData();
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
 
-  if (!record) {
+  if (loading) {
+    return (
+      <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
+        <EmptyState title="Loading…" />
+      </DashboardShell>
+    );
+  }
+
+  if (error || !record) {
     return (
       <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
         <SectionCard title="No record found">
-          <p>
-            We couldn't find your trainee record. Contact HR if this looks
-            wrong.
-          </p>
+          {error ? <FormBanner tone="error">{error}</FormBanner> : <p>We couldn't find your trainee record. Contact HR if this looks wrong.</p>}
         </SectionCard>
       </DashboardShell>
     );
   }
 
-  const certificateReady =
-    record.tracks?.certificate?.status === 'issued';
+  const certificateReady = record.tracks?.certificate?.status === 'issued';
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    setDownloadError('');
+    try {
+      await downloadTraineeCertificate();
+    } catch (err) {
+      setDownloadError(err.message);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
       <DashboardShell navItems={TRAINEE_NAV_ITEMS}>
@@ -56,6 +55,7 @@ function TraineeCertificatePage() {
           </div>
 
           <SectionCard>
+            {downloadError && <FormBanner tone="error">{downloadError}</FormBanner>}
             {certificateReady ? (
                 <>
                   <p>Your completion certificate is ready.</p>
@@ -63,7 +63,8 @@ function TraineeCertificatePage() {
                   <Button
                       type="button"
                       variant="primary"
-                      onClick={() => handleCertificateDownload(record)}
+                      onClick={handleDownload}
+                      loading={downloading}
                   >
                     Download final certificate
                   </Button>

@@ -1,5 +1,7 @@
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
+import EmptyState from '../../components/dashboard/EmptyState';
+import FormBanner from '../../components/form/FormBanner';
 import { useCoordinatorData } from '../../data/DataContext';
 import { DIVISIONS } from '../../data/mockData';
 import { DivisionIcon } from '../../components/dashboard/trackIcons';
@@ -8,7 +10,7 @@ import '../../components/dashboard/DashboardPage.css';
 import './CoordinatorDivisions.css';
 
 function CoordinatorDivisionsPage() {
-  const { students } = useCoordinatorData();
+  const { students, loading, error } = useCoordinatorData();
 
   return (
     <DashboardShell navItems={COORDINATOR_NAV_ITEMS}>
@@ -18,6 +20,9 @@ function CoordinatorDivisionsPage() {
           <p>Where your assigned trainees can be placed. Full division profiles will be added later.</p>
         </div>
 
+        {loading && <EmptyState title="Loading…" />}
+        {!loading && error && <FormBanner tone="error">Couldn't load students: {error}</FormBanner>}
+        {!loading && !error && (
         <SectionCard>
           <div className="division-grid">
             {DIVISIONS.map((division) => {
@@ -36,6 +41,7 @@ function CoordinatorDivisionsPage() {
             })}
           </div>
         </SectionCard>
+        )}
       </div>
     </DashboardShell>
   );

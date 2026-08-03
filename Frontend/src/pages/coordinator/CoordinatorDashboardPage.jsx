@@ -4,6 +4,8 @@ import DashboardShell from '../../components/dashboard/DashboardShell';
 import SectionCard from '../../components/dashboard/SectionCard';
 import StatusPill from '../../components/dashboard/StatusPill';
 import DataTable from '../../components/dashboard/DataTable';
+import EmptyState from '../../components/dashboard/EmptyState';
+import FormBanner from '../../components/form/FormBanner';
 import TextField from '../../components/form/TextField';
 import { useCoordinatorData } from '../../data/DataContext';
 import { formatDate } from '../../utils/time';
@@ -36,7 +38,7 @@ function trainingStatusMeta(training) {
 }
 
 function CoordinatorDashboardPage() {
-  const { students } = useCoordinatorData();
+  const { students, loading, error } = useCoordinatorData();
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -129,13 +131,17 @@ function CoordinatorDashboardPage() {
             </div>
           </div>
 
-          <DataTable
-            columns={columns}
-            rows={filteredRows}
-            onRowClick={(row) => navigate(`/app/coordinator/students/${row.id}`)}
-            emptyTitle="No students match this view"
-            emptyBody="Try a different filter, or ask HR to assign students to you."
-          />
+          {loading && <EmptyState title="Loading students…" />}
+          {!loading && error && <FormBanner tone="error">Couldn't load students: {error}</FormBanner>}
+          {!loading && !error && (
+            <DataTable
+              columns={columns}
+              rows={filteredRows}
+              onRowClick={(row) => navigate(`/app/coordinator/students/${row.id}`)}
+              emptyTitle="No students match this view"
+              emptyBody="Try a different filter, or ask HR to assign students to you."
+            />
+          )}
         </SectionCard>
       </div>
     </DashboardShell>

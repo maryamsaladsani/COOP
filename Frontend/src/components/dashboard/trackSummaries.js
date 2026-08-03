@@ -80,7 +80,9 @@ export function getTrackSummaries(record, now) {
       statusLabel: divisionMeta.label,
       detail:
         tracks.divisionAssignment.status === 'assigned'
-          ? `${tracks.divisionAssignment.division} · Manager: ${tracks.divisionAssignment.managerName}`
+          ? tracks.divisionAssignment.managerName
+            ? `${tracks.divisionAssignment.division} · Manager: ${tracks.divisionAssignment.managerName}`
+            : tracks.divisionAssignment.division
           : 'Not assigned yet.',
       date: tracks.divisionAssignment.status === 'assigned' ? formatDate(tracks.divisionAssignment.assignedAt) : null,
     },
@@ -116,7 +118,11 @@ export function getTrackSummaries(record, now) {
       tone: certificateMeta.tone,
       statusLabel: certificateMeta.label,
       detail:
-        tracks.certificate.status === 'issued' ? `Issued on ${formatDate(tracks.certificate.issuedAt)}.` : 'Pending — awaiting HR issuance.',
+        tracks.certificate.status === 'issued'
+          ? formatDate(tracks.certificate.issuedAt)
+            ? `Issued on ${formatDate(tracks.certificate.issuedAt)}.`
+            : 'Issued.'
+          : 'Pending — awaiting HR issuance.',
       date: tracks.certificate.status === 'issued' ? formatDate(tracks.certificate.issuedAt) : null,
     },
   ];
