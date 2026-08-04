@@ -8,6 +8,11 @@ const AuthContext = createContext(null);
 // keep the two in sync if this ever changes.
 const STORAGE_KEY = 'coop.session';
 
+// Fix 4: TraineeDashboardPage's "sign your contract" notice dismissal, scoped to this
+// key so it's cleared here at logout — dismissing it only hides it for the current
+// login session, it reappears next time the trainee signs in while still unsigned.
+export const CONTRACT_NOTICE_DISMISSED_KEY = 'coop.contractNoticeDismissed';
+
 function readStoredUser() {
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
@@ -33,6 +38,7 @@ export function AuthProvider({ children }) {
     apiRequest('/api/auth/logout', { method: 'POST' }).catch(() => {});
     setUser(null);
     window.sessionStorage.removeItem(STORAGE_KEY);
+    window.sessionStorage.removeItem(CONTRACT_NOTICE_DISMISSED_KEY);
   };
 
   const value = useMemo(() => ({ user, isAuthenticated: Boolean(user), login, logout }), [user]);

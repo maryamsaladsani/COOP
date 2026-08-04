@@ -66,10 +66,11 @@ export async function signIn(email, password) {
   return normalizeUser(data.user, data.token);
 }
 
-// HR/Coordinator self-service signup (REQ-28). `payload` is SignUpPage's raw
-// form values — only email/password/role/name map to real backend fields;
-// see the frontend-integration summary for the rest (username, employeeId,
-// department, division, companyRole) which the backend has no storage for.
+// HR/Coordinator self-service signup (REQ-28). `payload` is SignUpPage's raw form values —
+// email/password/role/name/departmentId map to real backend fields (departmentId only for
+// Coordinator, which links Department.coordinatorId server-side in the same transaction as
+// account creation). username/employeeId/companyRole still have no backend storage — see the
+// frontend-integration summary.
 export async function signUp(payload) {
   const fullName = `${payload.firstName} ${payload.lastName}`.trim();
   const role = FRONTEND_TO_BACKEND_ROLE[payload.role] || payload.role;
@@ -77,7 +78,13 @@ export async function signUp(payload) {
   const data = await apiRequest('/api/auth/signup', {
     method: 'POST',
     auth: false,
-    body: { email: payload.email, password: payload.password, fullName, role },
+    body: {
+      email: payload.email,
+      password: payload.password,
+      fullName,
+      role,
+      ...(role === 'COORDINATOR' ? { departmentId: payload.departmentId } : {}),
+    },
   });
   // Signup doesn't return a token — the caller (SignUpPage) logs in separately.
   return normalizeUser(data.user, null);

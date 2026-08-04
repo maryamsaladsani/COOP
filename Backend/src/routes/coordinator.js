@@ -1,13 +1,20 @@
 // Coordinator routes: account request (REQ-10), desk/device request (REQ-50), division
 // assignment (REQ-11), assigned trainee list/profile (REQ-12/13), training completion
 // confirmation (REQ-14) — all scoped to coordinatorId (REQ-36).
+//
+// Each of the four actions below is independently triggerable — the 7-step onboarding
+// roadmap (Backend/src/lib/milestone.js) is a visual progress tracker only, not a
+// sequential gate between coordinator actions. The one shared precondition across all
+// four is contractSigned === true; there is no "must be at step X" check between them
+// (that's what used to block e.g. requesting an account before division assignment).
 
 const express = require("express");
 
 const { requireAuth } = require("../middleware/auth");
 const { roleGuard } = require("../middleware/roleGuard");
 const prisma = require("../lib/prisma");
-const { canAdvance } = require("../lib/milestone");
+const { isMilestoneBehind } = require("../lib/milestone");
+const { resolveDocument } = require("../lib/uploads");
 
 const router = express.Router();
 
@@ -25,7 +32,7 @@ router.use(roleGuard("COORDINATOR"));
 async function loadOwnedTrainee(req, res, { blockIfWithdrawn = false } = {}) {
   const trainee = await prisma.trainee.findUnique({
     where: { id: req.params.id },
-    include: { department: { include: { coordinator: { select: { id: true, fullName: true } } } } },
+    include: { department: { include: { coordinator: { select: { id: true, fullName: true } }, divisions: { orderBy: { name: "asc" } } } } },
   });
 
   if (!trainee || trainee.coordinatorId !== req.user.id) {
@@ -41,12 +48,24 @@ async function loadOwnedTrainee(req, res, { blockIfWithdrawn = false } = {}) {
   return trainee;
 }
 
+// Shared precondition for every coordinator action (Fix 3): the trainee must have signed
+// their contract first. Returns true (and has already sent a 409) if blocked.
+function blockIfContractUnsigned(trainee, res) {
+  if (!trainee.contractSigned) {
+    res.status(409).json({
+      message: "Trainee has not signed their contract yet — actions unlock once signed",
+    });
+    return true;
+  }
+  return false;
+}
+
 // --- REQ-12: assigned trainee list, scoped at the query level (not fetch-all + filter) ---
 router.get("/trainees", async (req, res) => {
   const trainees = await prisma.trainee.findMany({
     where: { coordinatorId: req.user.id },
     orderBy: { createdAt: "asc" },
-    include: { department: { include: { coordinator: { select: { id: true, fullName: true } } } } },
+    include: { department: { include: { coordinator: { select: { id: true, fullName: true } }, divisions: { orderBy: { name: "asc" } } } } },
   });
 
   res.status(200).json({ trainees });
@@ -60,7 +79,24 @@ router.get("/trainees/:id", async (req, res) => {
   res.status(200).json({ trainee });
 });
 
-// --- REQ-11: division assignment, DEPARTMENT_ASSIGNMENT -> DIVISION_ASSIGNMENT -----------
+// --- REQ-01: download an application document — scoped to this coordinator's own trainees
+router.get("/trainees/:id/documents/:field", async (req, res) => {
+  const trainee = await loadOwnedTrainee(req, res);
+  if (!trainee) return;
+
+  const document = resolveDocument(trainee, req.params.field);
+  if (!document) {
+    return res.status(404).json({ message: "Document not found" });
+  }
+
+  res.download(document.absolutePath, document.originalName, (err) => {
+    if (err && !res.headersSent) {
+      res.status(404).json({ message: "Document file is missing from storage" });
+    }
+  });
+});
+
+// --- REQ-11: division assignment — independent action, gated only on contractSigned ------
 router.patch("/trainees/:id/division", async (req, res) => {
   const { division } = req.body || {};
   if (!division) {
@@ -70,69 +106,82 @@ router.patch("/trainees/:id/division", async (req, res) => {
   const trainee = await loadOwnedTrainee(req, res, { blockIfWithdrawn: true });
   if (!trainee) return;
 
-  if (!canAdvance(trainee.milestone, "DIVISION_ASSIGNMENT")) {
-    return res.status(409).json({
-      message: `Trainee must be at DEPARTMENT_ASSIGNMENT to assign a division (currently at ${trainee.milestone})`,
+  if (blockIfContractUnsigned(trainee, res)) return;
+
+  // Scoped to the trainee's own department's divisions when that department has any
+  // defined — departments seeded with no division list yet (most of them, currently)
+  // fall back to accepting any value, so division assignment isn't blocked while HR/the
+  // spreadsheet source catches up on filling those in.
+  const departmentDivisions = trainee.department?.divisions?.map((d) => d.name) || [];
+  if (departmentDivisions.length > 0 && !departmentDivisions.includes(division)) {
+    return res.status(400).json({
+      message: `division must be one of this trainee's department's divisions: ${departmentDivisions.join(", ")}`,
     });
   }
 
-  const updated = await prisma.trainee.update({
-    where: { id: trainee.id },
-    data: { division, milestone: "DIVISION_ASSIGNMENT" },
-  });
+  const data = { division };
+  if (isMilestoneBehind(trainee.milestone, "DIVISION_ASSIGNMENT")) {
+    data.milestone = "DIVISION_ASSIGNMENT";
+  }
+
+  const updated = await prisma.trainee.update({ where: { id: trainee.id }, data });
 
   res.status(200).json({ trainee: updated });
 });
 
-// --- REQ-10: company account request, DIVISION_ASSIGNMENT -> ACCOUNT_CREDENTIALS ---------
+// --- REQ-10: company account request — independent action, gated only on contractSigned --
 router.patch("/trainees/:id/request-account", async (req, res) => {
   const trainee = await loadOwnedTrainee(req, res, { blockIfWithdrawn: true });
   if (!trainee) return;
 
-  if (!canAdvance(trainee.milestone, "ACCOUNT_CREDENTIALS")) {
-    return res.status(409).json({
-      message: `Trainee must be at DIVISION_ASSIGNMENT to request an account (currently at ${trainee.milestone})`,
-    });
+  if (blockIfContractUnsigned(trainee, res)) return;
+
+  if (trainee.accountRequested) {
+    return res.status(409).json({ message: "Account has already been requested for this trainee" });
   }
 
-  const updated = await prisma.trainee.update({
-    where: { id: trainee.id },
-    data: { milestone: "ACCOUNT_CREDENTIALS" },
-  });
+  const data = { accountRequested: true, accountRequestedAt: new Date() };
+  if (isMilestoneBehind(trainee.milestone, "ACCOUNT_CREDENTIALS")) {
+    data.milestone = "ACCOUNT_CREDENTIALS";
+  }
+
+  const updated = await prisma.trainee.update({ where: { id: trainee.id }, data });
 
   res.status(200).json({ trainee: updated });
 });
 
-// --- REQ-50: desk/device request, ACCOUNT_CREDENTIALS -> DESK_DEVICE ---------------------
+// --- REQ-50: desk/device request — independent action, gated only on contractSigned ------
 router.patch("/trainees/:id/request-desk-device", async (req, res) => {
   const trainee = await loadOwnedTrainee(req, res, { blockIfWithdrawn: true });
   if (!trainee) return;
 
-  if (!canAdvance(trainee.milestone, "DESK_DEVICE")) {
-    return res.status(409).json({
-      message: `Trainee must be at ACCOUNT_CREDENTIALS to request a desk and device (currently at ${trainee.milestone})`,
-    });
+  if (blockIfContractUnsigned(trainee, res)) return;
+
+  if (trainee.deskDeviceRequested) {
+    return res.status(409).json({ message: "Desk and device have already been requested for this trainee" });
   }
 
-  const updated = await prisma.trainee.update({
-    where: { id: trainee.id },
-    data: { milestone: "DESK_DEVICE" },
-  });
+  const data = { deskDeviceRequested: true, deskDeviceRequestedAt: new Date() };
+  if (isMilestoneBehind(trainee.milestone, "DESK_DEVICE")) {
+    data.milestone = "DESK_DEVICE";
+  }
+
+  const updated = await prisma.trainee.update({ where: { id: trainee.id }, data });
 
   res.status(200).json({ trainee: updated });
 });
 
-// --- REQ-14: training completion confirmation ---------------------------------------------
-// Gates REQ-26 (HR issues certificate) but does not itself advance milestone to CERTIFICATE —
-// that's set by HR in a later phase.
+// --- REQ-14: training completion confirmation — independent action, gated only on --------
+// contractSigned. Does not itself advance milestone to CERTIFICATE — that's set by HR's
+// issue-certificate route (REQ-26), which checks all six prior steps directly (see hr.js).
 router.patch("/trainees/:id/confirm-training", async (req, res) => {
   const trainee = await loadOwnedTrainee(req, res, { blockIfWithdrawn: true });
   if (!trainee) return;
 
-  if (trainee.milestone !== "DESK_DEVICE") {
-    return res.status(409).json({
-      message: `Trainee must be at DESK_DEVICE to confirm training completion (currently at ${trainee.milestone})`,
-    });
+  if (blockIfContractUnsigned(trainee, res)) return;
+
+  if (trainee.trainingCompleted) {
+    return res.status(409).json({ message: "Training completion has already been confirmed for this trainee" });
   }
 
   const updated = await prisma.trainee.update({

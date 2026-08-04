@@ -12,17 +12,14 @@ const MILESTONE_ORDER = [
   "CERTIFICATE",
 ];
 
-// True only for a single step forward from `currentMilestone` to `targetMilestone` —
-// no skipping ahead, no going backward, no staying in place.
-function canAdvance(currentMilestone, targetMilestone) {
-  const currentIndex = MILESTONE_ORDER.indexOf(currentMilestone);
-  const targetIndex = MILESTONE_ORDER.indexOf(targetMilestone);
-
-  if (currentIndex === -1 || targetIndex === -1) {
-    return false;
-  }
-
-  return targetIndex === currentIndex + 1;
+// The 7-step roadmap is a visual progress tracker only (see hr.js/coordinator.js route
+// comments) — individual actions (Card Request, Department Assignment, Division
+// Assignment, Account Credentials, Desk & Device) are independently triggerable in any
+// order once their own real precondition is met, they don't gate each other. This helper
+// is only for keeping the single `milestone` display field moving forward as actions land,
+// never regressing a trainee whose independent actions already passed `targetMilestone`.
+function isMilestoneBehind(currentMilestone, targetMilestone) {
+  return MILESTONE_ORDER.indexOf(currentMilestone) < MILESTONE_ORDER.indexOf(targetMilestone);
 }
 
-module.exports = { MILESTONE_ORDER, canAdvance };
+module.exports = { MILESTONE_ORDER, isMilestoneBehind };

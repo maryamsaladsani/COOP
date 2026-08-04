@@ -13,8 +13,8 @@ const prisma = require("../lib/prisma");
 const resend = require("../lib/resend");
 const asyncHandler = require("../lib/asyncHandler");
 const formatDate = require("../lib/formatDate");
-const { canAdvance, MILESTONE_ORDER } = require("../lib/milestone");
-const { applyCardAutoTransition, applyCardAutoTransitionToMany } = require("../lib/cardAutoTransition");
+const { isMilestoneBehind } = require("../lib/milestone");
+const { resolveDocument } = require("../lib/uploads");
 
 const router = express.Router();
 
@@ -133,7 +133,10 @@ router.get(
   "/departments",
   asyncHandler(async (req, res) => {
     const departments = await prisma.department.findMany({
-      include: { coordinator: { select: { id: true, fullName: true } } },
+      include: {
+        coordinator: { select: { id: true, fullName: true } },
+        divisions: { orderBy: { name: "asc" } },
+      },
       orderBy: { name: "asc" },
     });
 
@@ -146,6 +149,7 @@ router.get(
       floorNumber: d.floorNumber,
       coordinatorId: d.coordinatorId,
       coordinatorName: d.coordinator ? d.coordinator.fullName : null,
+      divisions: d.divisions.map((div) => div.name),
     }));
 
     res.status(200).json({ departments: shaped });
@@ -199,8 +203,7 @@ router.get(
   "/students",
   asyncHandler(async (req, res) => {
     const trainees = await prisma.trainee.findMany({ orderBy: { createdAt: "desc" } });
-    const transitioned = await applyCardAutoTransitionToMany(trainees); // REQ-22 check-on-read
-    res.status(200).json({ students: transitioned.map(toStudentSummary) });
+    res.status(200).json({ students: trainees.map(toStudentSummary) });
   })
 );
 
@@ -213,8 +216,29 @@ router.get(
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const updated = await applyCardAutoTransition(trainee); // REQ-22 check-on-read
-    res.status(200).json({ student: updated });
+    res.status(200).json({ student: trainee });
+  })
+);
+
+// --- REQ-01: download an application document — HR sees all students, no scoping --------
+router.get(
+  "/students/:id/documents/:field",
+  asyncHandler(async (req, res) => {
+    const trainee = await prisma.trainee.findUnique({ where: { id: req.params.id } });
+    if (!trainee) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const document = resolveDocument(trainee, req.params.field);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    res.download(document.absolutePath, document.originalName, (err) => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ message: "Document file is missing from storage" });
+      }
+    });
   })
 );
 
@@ -299,6 +323,9 @@ router.patch(
 );
 
 // --- REQ-21: request ISD card ---------------------------------------------------------------
+// No waiting period — cardStatus moves straight to ISSUED. HR, Coordinator, and Trainee
+// dashboards all read this same field directly (see traineeAdapter.js's cardTrackStatus and
+// trainee.js's GET /status), so there's a single source of truth and nothing to reconcile.
 router.patch(
   "/students/:id/request-card",
   asyncHandler(async (req, res) => {
@@ -317,10 +344,13 @@ router.patch(
       });
     }
 
-    const updated = await prisma.trainee.update({
-      where: { id: trainee.id },
-      data: { cardStatus: "REQUESTED", cardRequestedAt: new Date() },
-    });
+    const now = new Date();
+    const data = { cardStatus: "ISSUED", cardRequestedAt: now, cardIssuedAt: now };
+    if (isMilestoneBehind(trainee.milestone, "COMPANY_CARD")) {
+      data.milestone = "COMPANY_CARD";
+    }
+
+    const updated = await prisma.trainee.update({ where: { id: trainee.id }, data });
 
     return res.status(200).json({ trainee: updated });
   })
@@ -376,14 +406,13 @@ router.patch(
       });
     }
 
-    const departmentAssignmentIndex = MILESTONE_ORDER.indexOf("DEPARTMENT_ASSIGNMENT");
     const updated = await prisma.$transaction(
       trainees.map((t) => {
         const data = { departmentId: department.id, coordinatorId: department.coordinatorId };
         // Advance milestone forward only — never regress a trainee who has already
         // progressed past DEPARTMENT_ASSIGNMENT (e.g. re-assigning to a different department
         // after the coordinator has moved them on to DIVISION_ASSIGNMENT).
-        if (MILESTONE_ORDER.indexOf(t.milestone) < departmentAssignmentIndex) {
+        if (isMilestoneBehind(t.milestone, "DEPARTMENT_ASSIGNMENT")) {
           data.milestone = "DEPARTMENT_ASSIGNMENT";
         }
         return prisma.trainee.update({ where: { id: t.id }, data });
@@ -394,7 +423,12 @@ router.patch(
   })
 );
 
-// --- REQ-26: issue completion certificate, gated on Coordinator's REQ-14 confirmation -----
+// --- REQ-26: issue completion certificate -------------------------------------------------
+// This is the one case (Fix 2's stated exception) where a dependency check remains: unlike
+// the four independent Coordinator actions, certificate issuance requires ALL six prior
+// milestones actually complete. Because those actions no longer gate each other, they can
+// land in any order — the single `milestone` display field only tracks the furthest step
+// reached and can't prove every step happened, so this checks each real field directly.
 router.patch(
   "/students/:id/issue-certificate",
   asyncHandler(async (req, res) => {
@@ -402,12 +436,18 @@ router.patch(
     if (!trainee) {
       return res.status(404).json({ message: "Student not found" });
     }
-    if (!trainee.trainingCompleted) {
-      return res.status(409).json({ message: "Training completion has not been confirmed by the coordinator yet" });
-    }
-    if (!canAdvance(trainee.milestone, "CERTIFICATE")) {
+
+    const incomplete = [];
+    if (trainee.cardStatus !== "ISSUED") incomplete.push("Company Card");
+    if (!trainee.departmentId || !trainee.coordinatorId) incomplete.push("Department Assignment");
+    if (!trainee.division) incomplete.push("Division Assignment");
+    if (!trainee.accountRequested) incomplete.push("Account Credentials");
+    if (!trainee.deskDeviceRequested) incomplete.push("Desk & Device");
+    if (!trainee.trainingCompleted) incomplete.push("Training Completion (Coordinator confirmation)");
+
+    if (incomplete.length > 0) {
       return res.status(409).json({
-        message: `Student must be at DESK_DEVICE to issue a certificate (currently at ${trainee.milestone})`,
+        message: `Cannot issue certificate — incomplete milestone(s): ${incomplete.join(", ")}`,
       });
     }
 

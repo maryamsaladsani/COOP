@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthShell from '../components/auth/AuthShell';
 import TextField from '../components/form/TextField';
@@ -8,6 +8,7 @@ import Button from '../components/Button';
 import FormBanner from '../components/form/FormBanner';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../data/mockAuth';
+import { apiRequest } from '../data/apiClient';
 import { isRequired, isValidEmail, isPasswordStrongEnough, runValidators } from '../utils/validation';
 import './SignUpPage.css';
 
@@ -25,8 +26,7 @@ const INITIAL_VALUES = {
   password: '',
   confirmPassword: '',
   employeeId: '',
-  department: '',
-  division: '',
+  departmentId: '',
   companyRole: '',
 };
 
@@ -47,8 +47,9 @@ const RULES = {
     return value === all.password ? null : 'Passwords do not match.';
   },
   employeeId: (value) => (isRequired(value) ? null : 'Enter your Saudi Energy employee ID.'),
-  department: (value) => (isRequired(value) ? null : 'Enter your department.'),
-  division: (value) => (isRequired(value) ? null : 'Select your division.'),
+  // Only Training Coordinators have a department to pick — HR has no department concept
+  // anywhere in the schema (HR sees all students, unscoped). See DepartmentField below.
+  departmentId: (value, all) => (all.role !== 'coordinator' || isRequired(value) ? null : 'Select your department.'),
   companyRole: (value) => (isRequired(value) ? null : 'Enter your company role.'),
 };
 
@@ -59,6 +60,14 @@ function SignUpPage() {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [departmentsError, setDepartmentsError] = useState('');
+
+  useEffect(() => {
+    apiRequest('/api/departments', { auth: false })
+      .then((res) => setDepartments(res.departments))
+      .catch((err) => setDepartmentsError(err.message));
+  }, []);
 
   const handleChange = (field) => (event) => {
     setValues((prev) => ({ ...prev, [field]: event.target.value }));
@@ -161,24 +170,19 @@ function SignUpPage() {
             onChange={handleChange('employeeId')}
             error={errors.employeeId}
           />
-          <TextField
-            label="Department"
-            name="department"
-            required
-            value={values.department}
-            onChange={handleChange('department')}
-            error={errors.department}
-          />
-          <TextField
-  label="Division"
-  name="division"
-  placeholder="Enter your division"
-  required
-  value={values.division}
-  onChange={handleChange('division')}
-  error={errors.division}
-/>
-        
+          {values.role === 'coordinator' && (
+            <SelectField
+              label="Department"
+              name="departmentId"
+              placeholder={departmentsError ? 'Could not load departments' : 'Select your department'}
+              required
+              disabled={Boolean(departmentsError)}
+              options={departments.map((d) => ({ value: d.id, label: d.name }))}
+              value={values.departmentId}
+              onChange={handleChange('departmentId')}
+              error={errors.departmentId || departmentsError}
+            />
+          )}
           <TextField
             label="Company role"
             name="companyRole"

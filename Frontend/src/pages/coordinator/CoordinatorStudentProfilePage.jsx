@@ -7,12 +7,13 @@ import InfoField from '../../components/dashboard/InfoField';
 import TrackCard from '../../components/dashboard/TrackCard';
 import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
+import DocumentChipList from '../../components/dashboard/DocumentChip';
 import Button from '../../components/Button';
 import SelectField from '../../components/form/SelectField';
+import TextField from '../../components/form/TextField';
 import FormBanner from '../../components/form/FormBanner';
 import { useCoordinatorData } from '../../data/DataContext';
 import { useNow, formatDate } from '../../utils/time';
-import { DIVISIONS } from '../../data/mockData';
 import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import '../../components/dashboard/DashboardPage.css';
 
@@ -67,6 +68,10 @@ function CoordinatorStudentProfilePage() {
   }
 
   const { tracks } = record;
+  // Scoped to this trainee's own department (Fix: no more single global division list).
+  // Most departments have none defined yet — falls back to freeform entry for those,
+  // matching the backend's own graceful fallback (see coordinator.js's division route).
+  const departmentDivisions = tracks.departmentAssignment.divisions || [];
 
   const runQuickAction = async (key, fn, successText) => {
     setActionLoading(key);
@@ -124,6 +129,11 @@ function CoordinatorStudentProfilePage() {
         </SectionCard>
 
         <SectionCard title="Coordinator actions">
+          {!tracks.contract.signed && (
+            <FormBanner tone="info">
+              Trainee has not signed their contract yet — actions unlocked once signed.
+            </FormBanner>
+          )}
           <div className="profile-actions">
             <div className="profile-action">
               <h3>Request company user account</h3>
@@ -132,7 +142,7 @@ function CoordinatorStudentProfilePage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => runQuickAction('account', () => requestCompanyAccount(record.id), 'Account requested.')}
-                disabled={tracks.accountCredentials.status !== 'not_requested'}
+                disabled={!tracks.contract.signed || tracks.accountCredentials.status !== 'not_requested'}
                 loading={actionLoading === 'account'}
               >
                 {tracks.accountCredentials.status === 'not_requested' ? 'Request account' : 'Already requested'}
@@ -146,7 +156,7 @@ function CoordinatorStudentProfilePage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => runQuickAction('desk', () => requestDeskDevice(record.id), 'Desk and device requested.')}
-                disabled={tracks.deskDevice.status !== 'not_requested'}
+                disabled={!tracks.contract.signed || tracks.deskDevice.status !== 'not_requested'}
                 loading={actionLoading === 'desk'}
               >
                 {tracks.deskDevice.status === 'not_requested' ? 'Request desk & device' : 'Already requested'}
@@ -156,7 +166,7 @@ function CoordinatorStudentProfilePage() {
             <div className="profile-action">
               <h3>Assign division</h3>
               <p>Sets the trainee's division.</p>
-              <Button variant="secondary" size="sm" onClick={() => setDivisionOpen(true)}>
+              <Button variant="secondary" size="sm" onClick={() => setDivisionOpen(true)} disabled={!tracks.contract.signed}>
                 {tracks.divisionAssignment.status === 'assigned' ? 'Update division' : 'Assign division'}
               </Button>
             </div>
@@ -167,11 +177,11 @@ function CoordinatorStudentProfilePage() {
                 <p>Completed on {formatDate(tracks.training.completedAt)}.</p>
               ) : (
                 <>
-                  <p>{tracks.training.started ? 'Confirm once this trainee has finished.' : 'Available once desk & device is ready.'}</p>
+                  <p>Confirm once this trainee has finished training.</p>
                   <Button
                     variant="secondary"
                     size="sm"
-                    disabled={!tracks.training.started}
+                    disabled={!tracks.contract.signed}
                     onClick={() => runQuickAction('completed', () => confirmTrainingCompleted(record.id), 'Training completion confirmed.')}
                     loading={actionLoading === 'completed'}
                   >
@@ -204,6 +214,13 @@ function CoordinatorStudentProfilePage() {
             <InfoField label="Training period" value={`${formatDate(record.startDate)} – ${formatDate(record.endDate)}`} />
           </div>
         </SectionCard>
+
+        <SectionCard title="Application documents">
+          <DocumentChipList
+            documents={record.documents}
+            buildDownloadPath={(field) => `/api/coordinator/trainees/${record.id}/documents/${field}`}
+          />
+        </SectionCard>
       </div>
 
       <ConfirmDialog
@@ -217,15 +234,26 @@ function CoordinatorStudentProfilePage() {
         onClose={() => setDivisionOpen(false)}
       >
         <div className="profile-form">
-          <SelectField
-            label="Division"
-            name="division"
-            required
-            placeholder="Select division"
-            options={DIVISIONS.map((d) => ({ value: d, label: d }))}
-            value={divisionValues.division}
-            onChange={(e) => setDivisionValues({ division: e.target.value })}
-          />
+          {departmentDivisions.length > 0 ? (
+            <SelectField
+              label="Division"
+              name="division"
+              required
+              placeholder="Select division"
+              options={departmentDivisions.map((d) => ({ value: d, label: d }))}
+              value={divisionValues.division}
+              onChange={(e) => setDivisionValues({ division: e.target.value })}
+            />
+          ) : (
+            <TextField
+              label="Division"
+              name="division"
+              required
+              hint="No divisions are defined for this department yet — enter one manually."
+              value={divisionValues.division}
+              onChange={(e) => setDivisionValues({ division: e.target.value })}
+            />
+          )}
         </div>
       </ConfirmDialog>
     </DashboardShell>

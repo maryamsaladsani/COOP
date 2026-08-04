@@ -98,27 +98,38 @@ model Trainee {
   user   User?   @relation("TraineeAccount", fields: [userId], references: [id])
 
   // --- REQ-01: application fields ------------------------------------------
-  fullName                String
-  phone                   String
-  birthDate               DateTime
-  personalEmail           String   @unique
-  universityEmail         String // university training email (REQ-18 recipient)
-  universityName          String
-  college                 String
-  major                   String
-  gpa                     Float
-  startDate               DateTime
-  endDate                 DateTime
-  durationMonths          Int
-  nationality             String
-  nationalId              String   @unique
-  bloodType               String
-  signatureUrl            String
-  personalImageUrl        String
-  universityTranscriptUrl String
-  cvUrl                   String
-  iban                    String
-  universityLetterUrl     String
+  fullName                         String
+  phone                            String
+  birthDate                        DateTime
+  personalEmail                    String   @unique
+  universityEmail                  String // university training email (REQ-18 recipient)
+  universityName                   String
+  college                          String
+  major                            String
+  gpa                              Float
+  startDate                        DateTime
+  endDate                          DateTime
+  durationMonths                   Int
+  nationality                      String
+  nationalId                       String   @unique
+  bloodType                        String
+  // *Url holds the server-generated stored filename (see Backend/src/lib/uploads.js —
+  // random UUID + original extension, resolved against UPLOADS_DIR), never a public URL
+  // or user-controlled path. *OriginalName is the human-readable filename shown in the UI
+  // and used as the download's Content-Disposition filename. Both are set together at
+  // upload time (REQ-01); a null *OriginalName means no real file is stored for this row
+  // (e.g. data seeded before file upload existed) even if *Url has a legacy placeholder value.
+  signatureUrl                     String
+  signatureOriginalName            String?
+  personalImageUrl                 String
+  personalImageOriginalName        String?
+  universityTranscriptUrl          String
+  universityTranscriptOriginalName String?
+  cvUrl                            String
+  cvOriginalName                   String?
+  iban                             String
+  universityLetterUrl              String
+  universityLetterOriginalName     String?
 
   // --- REQ-02/03: referral ---------------------------------------------------
   referralSource      String
@@ -147,10 +158,22 @@ model Trainee {
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
 
-  // --- REQ-21/22: ISD card request + 2-hour auto-transition -------------------
+  // --- REQ-21: ISD card request. No waiting period — request moves cardStatus
+  // straight to ISSUED (see Backend/src/routes/hr.js request-card).
   cardStatus      CardStatus @default(NOT_REQUESTED)
   cardRequestedAt DateTime?
   cardIssuedAt    DateTime?
+
+  // --- REQ-10: company account request. Coordinator actions are independent of
+  // each other (each only requires contractSigned), so unlike the old single
+  // `milestone` field, certificate issuance needs a real per-step completion
+  // flag to verify — milestone alone can't tell "done" from "skipped ahead of".
+  accountRequested   Boolean   @default(false)
+  accountRequestedAt DateTime?
+
+  // --- REQ-50: desk/device request, same reasoning as accountRequested above --
+  deskDeviceRequested   Boolean   @default(false)
+  deskDeviceRequestedAt DateTime?
 
   // --- REQ-14: coordinator confirmation gating REQ-26 -------------------------
   trainingCompleted   Boolean   @default(false)
@@ -177,17 +200,37 @@ model Trainee {
 // user-editable in-app. coordinatorId links to an actual COORDINATOR User
 // where one exists; nullable because the spreadsheet may be seeded before
 // that coordinator has completed self-service signup (REQ-28).
+//
+// branch/businessLine/buildingNumber/floorNumber are nullable: several real
+// departments were seeded with only a name + division list, no branch/business
+// line/building/floor value supplied yet — left null rather than guessed, to be
+// filled in manually later (see prisma/seed-departments.js).
 model Department {
   id             String  @id @default(cuid())
   name           String  @unique
   coordinatorId  String?
   coordinator    User?   @relation("DepartmentCoordinator", fields: [coordinatorId], references: [id])
-  branch         String
-  businessLine   String
-  buildingNumber String
-  floorNumber    String
+  branch         String?
+  businessLine   String?
+  buildingNumber String?
+  floorNumber    String?
 
-  trainees Trainee[]
+  trainees  Trainee[]
+  divisions Division[]
 
   @@index([coordinatorId])
+}
+
+// A department's named divisions (REQ-11's Coordinator assign-division picker is scoped to
+// these, per trainee's assigned department) — NOT every department has any defined yet; an
+// empty list is valid and expected (see coordinator.js's division-assignment route, which
+// falls back to freeform when a department has none, rather than blocking assignment).
+model Division {
+  id           String     @id @default(cuid())
+  name         String
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([departmentId, name])
+  @@index([departmentId])
 }

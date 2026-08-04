@@ -11,7 +11,7 @@ const prisma = require("../lib/prisma");
 const asyncHandler = require("../lib/asyncHandler");
 const formatDate = require("../lib/formatDate");
 const { MILESTONE_ORDER } = require("../lib/milestone");
-const { applyCardAutoTransition } = require("../lib/cardAutoTransition");
+const { DOCUMENT_FIELDS, resolveDocument } = require("../lib/uploads");
 
 const router = express.Router();
 
@@ -50,13 +50,14 @@ function buildPlaceholderContract(trainee) {
 }
 
 // --- REQ-04: onboarding status/roadmap -----------------------------------------------------
+// Fix 1/4: returns the real cardStatus and contractSigned fields directly (not derived from
+// milestone position) so this dashboard reads the exact same source of truth as HR's and the
+// Coordinator's — no separate locally-approximated status values per role.
 router.get(
   "/status",
   asyncHandler(async (req, res) => {
-    let trainee = await loadOwnTrainee(req, res);
+    const trainee = await loadOwnTrainee(req, res);
     if (!trainee) return;
-
-    trainee = await applyCardAutoTransition(trainee); // REQ-22 check-on-read
 
     const currentIndex = MILESTONE_ORDER.indexOf(trainee.milestone);
     const roadmap = MILESTONE_ORDER.map((step, index) => ({
@@ -64,7 +65,57 @@ router.get(
       status: index < currentIndex ? "completed" : index === currentIndex ? "current" : "upcoming",
     }));
 
-    res.status(200).json({ milestone: trainee.milestone, roadmap, withdrawn: trainee.withdrawn });
+    res.status(200).json({
+      milestone: trainee.milestone,
+      roadmap,
+      withdrawn: trainee.withdrawn,
+      cardStatus: trainee.cardStatus,
+      cardRequestedAt: trainee.cardRequestedAt,
+      cardIssuedAt: trainee.cardIssuedAt,
+      accountRequested: trainee.accountRequested,
+      deskDeviceRequested: trainee.deskDeviceRequested,
+      contractSigned: trainee.contractSigned,
+      contractSignedAt: trainee.contractSignedAt,
+      trainingCompleted: trainee.trainingCompleted,
+      trainingCompletedAt: trainee.trainingCompletedAt,
+      certificateIssued: trainee.certificateIssued,
+      certificateIssuedAt: trainee.certificateIssuedAt,
+    });
+  })
+);
+
+// --- REQ-01: this trainee's own application documents, metadata only (no /status bloat) ---
+router.get(
+  "/documents",
+  asyncHandler(async (req, res) => {
+    const trainee = await loadOwnTrainee(req, res);
+    if (!trainee) return;
+
+    const documents = Object.fromEntries(
+      Object.entries(DOCUMENT_FIELDS).map(([field, columns]) => [field, trainee[columns.nameColumn] || null])
+    );
+
+    res.status(200).json({ documents });
+  })
+);
+
+// --- REQ-01: download one of this trainee's own application documents ---------------------
+router.get(
+  "/documents/:field",
+  asyncHandler(async (req, res) => {
+    const trainee = await loadOwnTrainee(req, res);
+    if (!trainee) return;
+
+    const document = resolveDocument(trainee, req.params.field);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    res.download(document.absolutePath, document.originalName, (err) => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ message: "Document file is missing from storage" });
+      }
+    });
   })
 );
 

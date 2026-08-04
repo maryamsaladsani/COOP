@@ -130,11 +130,11 @@ function ApplicationPage() {
         iban: values.iban.trim().toUpperCase(),
         referralSource: values.referralSource,
         employeeReferralId: values.referralSource === 'employee_referral' ? values.employeeReferralId : null,
-        transcriptFileName: values.transcript.name,
-        cvFileName: values.cv.name,
-        universityLetterFileName: values.universityLetter.name,
-        personalImageFileName: values.personalImage.name,
-        signatureFileName: values.signature.name,
+        transcriptFile: values.transcript,
+        cvFile: values.cv,
+        universityLetterFile: values.universityLetter,
+        personalImageFile: values.personalImage,
+        signatureFile: values.signature,
       });
       setSubmitted(true);
     } catch (err) {

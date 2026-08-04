@@ -6,6 +6,7 @@ const prisma = require("./lib/prisma");
 
 const authRoutes = require("./routes/auth");
 const applicationRoutes = require("./routes/applications");
+const departmentRoutes = require("./routes/departments");
 const traineeRoutes = require("./routes/trainee");
 const hrRoutes = require("./routes/hr");
 const coordinatorRoutes = require("./routes/coordinator");
@@ -31,6 +32,7 @@ app.get("/health", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes); // public — no requireAuth (REQ-01)
+app.use("/api/departments", departmentRoutes); // public — no requireAuth (REQ-28 signup)
 app.use("/api/trainee", traineeRoutes);
 app.use("/api/hr", hrRoutes);
 app.use("/api/coordinator", coordinatorRoutes);

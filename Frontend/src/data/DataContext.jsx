@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest, apiDownload } from './apiClient';
-import { adaptTrainee, adaptTrainees, milestoneReached } from './traineeAdapter';
+import { adaptTrainee, adaptTrainees, buildDocumentList } from './traineeAdapter';
 
 // Every role below is wired to the real backend (see ../../Backend). Each
 // exported hook is self-contained (its own fetch/state) since each role
@@ -21,44 +21,51 @@ function extractMonths(duration) {
 export function DataProvider({ children }) {
   // ---- Public --------------------------------------------------------
 
-  // REQ-01/02/03: real submission to POST /api/applications (no auth). The
-  // backend stores file fields as URL strings and has no upload/storage of
-  // its own yet, so the filenames ApplicationPage already collects are sent
-  // as placeholder "URLs" — see the frontend-integration summary.
+  // REQ-01/02/03: real submission to POST /api/applications (no auth), as multipart/
+  // form-data — the backend actually stores the uploaded file bytes now (see
+  // Backend/src/lib/uploads.js), not just filenames, so document chips elsewhere in the
+  // app have a real file to download. `payload.*File` are the real browser File objects
+  // from ApplicationPage's <input type="file"> fields, not just their .name.
   async function submitApplication(payload) {
     const durationMonths = extractMonths(payload.duration);
     if (Number.isNaN(durationMonths)) {
       throw new Error('Duration must include a number of months (e.g. "6 months").');
     }
 
+    const form = new FormData();
+    const fields = {
+      fullName: `${payload.firstName} ${payload.lastName}`.trim(),
+      phone: payload.phone,
+      birthDate: payload.birthDate,
+      personalEmail: payload.personalEmail,
+      universityEmail: payload.universityEmail,
+      universityName: payload.universityName,
+      college: payload.college,
+      major: payload.major,
+      gpa: Number(payload.gpa),
+      startDate: payload.startDate,
+      endDate: payload.endDate,
+      durationMonths,
+      nationality: payload.nationality,
+      nationalId: payload.nationalId,
+      bloodType: payload.bloodType,
+      iban: payload.iban,
+      referralSource: payload.referralSource,
+      referringEmployeeId: payload.employeeReferralId || '',
+    };
+    Object.entries(fields).forEach(([key, value]) => form.append(key, value));
+
+    // Field names here must match Backend/src/lib/uploads.js's DOCUMENT_FIELDS keys.
+    form.append('signature', payload.signatureFile);
+    form.append('personalImage', payload.personalImageFile);
+    form.append('universityTranscript', payload.transcriptFile);
+    form.append('cv', payload.cvFile);
+    form.append('universityLetter', payload.universityLetterFile);
+
     const trainee = await apiRequest('/api/applications', {
       method: 'POST',
       auth: false,
-      body: {
-        fullName: `${payload.firstName} ${payload.lastName}`.trim(),
-        phone: payload.phone,
-        birthDate: payload.birthDate,
-        personalEmail: payload.personalEmail,
-        universityEmail: payload.universityEmail,
-        universityName: payload.universityName,
-        college: payload.college,
-        major: payload.major,
-        gpa: Number(payload.gpa),
-        startDate: payload.startDate,
-        endDate: payload.endDate,
-        durationMonths,
-        nationality: payload.nationality,
-        nationalId: payload.nationalId,
-        bloodType: payload.bloodType,
-        signatureUrl: payload.signatureFileName,
-        personalImageUrl: payload.personalImageFileName,
-        universityTranscriptUrl: payload.transcriptFileName,
-        cvUrl: payload.cvFileName,
-        iban: payload.iban,
-        universityLetterUrl: payload.universityLetterFileName,
-        referralSource: payload.referralSource,
-        referringEmployeeId: payload.employeeReferralId || null,
-      },
+      body: form,
     });
     return trainee;
   }
@@ -316,20 +323,15 @@ export function useCoordinatorData() {
   };
 }
 
-// Trainee's own dashboard (REQ-04/05) — wired to the real, deliberately
-// minimal GET /status (milestone + a precomputed roadmap) and
-// GET /training-details. Neither endpoint returns a full raw trainee
-// record, so `record` here is synthesized: adaptTrainee() (the same
-// adapter HR/Coordinator use) is fed a minimal trainee-shaped object built
-// from what these two endpoints actually provide. Fields neither endpoint
-// supplies (cardStatus, trainingCompleted, certificateIssued) are
-// approximated from milestone position via milestoneReached() — safe
-// because REQ-04's own roadmap is itself just a milestone position, so
-// nothing here can show a step as done before the real milestone reaches
-// it. Narrow known gap: trainingCompleted is approximated as true only
-// once milestone reaches CERTIFICATE, so there's a brief real-world window
-// (Coordinator confirmed completion, HR hasn't issued the certificate yet)
-// where this lags what HR/Coordinator already see.
+// Trainee's own dashboard (REQ-04/05) — wired to the real GET /status and
+// GET /training-details. Neither endpoint returns a full raw trainee record,
+// so `record` here is synthesized: adaptTrainee() (the same adapter HR/
+// Coordinator use) is fed a minimal trainee-shaped object built from what
+// these two endpoints actually provide. GET /status now returns cardStatus,
+// accountRequested, deskDeviceRequested, contractSigned, trainingCompleted,
+// and certificateIssued as real fields (Fix 1/4) — this dashboard reads the
+// exact same source of truth as HR's and the Coordinator's, no local
+// milestone-position approximation.
 export function useTraineeData() {
   const { user } = useAuth();
   const [status, setStatus] = useState(null);
@@ -380,15 +382,17 @@ export function useTraineeData() {
       applicationStatus: 'ACCEPTED',
       withdrawn: Boolean(status.withdrawn),
       milestone,
-      cardStatus: milestoneReached({ milestone }, 'COMPANY_CARD') ? 'ISSUED' : 'NOT_REQUESTED',
-      cardRequestedAt: null,
-      cardIssuedAt: null,
-      trainingCompleted: milestone === 'CERTIFICATE',
-      trainingCompletedAt: null,
-      contractSigned: false,
-      contractSignedAt: null,
-      certificateIssued: milestone === 'CERTIFICATE',
-      certificateIssuedAt: null,
+      cardStatus: status.cardStatus,
+      cardRequestedAt: status.cardRequestedAt,
+      cardIssuedAt: status.cardIssuedAt,
+      accountRequested: status.accountRequested,
+      deskDeviceRequested: status.deskDeviceRequested,
+      trainingCompleted: status.trainingCompleted,
+      trainingCompletedAt: status.trainingCompletedAt,
+      contractSigned: status.contractSigned,
+      contractSignedAt: status.contractSignedAt,
+      certificateIssued: status.certificateIssued,
+      certificateIssuedAt: status.certificateIssuedAt,
       departmentId: department ? 'assigned' : null,
       coordinatorId: department ? 'assigned' : null,
       division: trainingDetails?.available ? trainingDetails.division : null,
@@ -400,6 +404,35 @@ export function useTraineeData() {
   }, [status, trainingDetails, user]);
 
   return { record, loading, error, refetch };
+}
+
+// Trainee's own application documents (REQ-01) — separate from useTraineeData() since
+// GET /status is deliberately minimal and doesn't carry these. Metadata only (original
+// filenames); the actual bytes are only ever fetched through DocumentChip's authenticated
+// per-field download route, never bundled into a JSON response.
+export function useTraineeDocuments() {
+  const [documents, setDocuments] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await apiRequest('/api/trainee/documents');
+      setDocuments(buildDocumentList((field) => ({ available: Boolean(res.documents[field]), fileName: res.documents[field] })));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { documents, loading, error };
 }
 
 // Contract (REQ-07/08) is standalone from the milestone roadmap (per

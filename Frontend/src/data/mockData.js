@@ -5,17 +5,6 @@ export const BRANCHES = ['Central', 'Southern', 'Eastern', 'Western'];
 
 export const DEFAULT_BRANCH = 'Eastern';
 
-export const DIVISIONS = [
-  'Grid Operations',
-  'Renewable Energy',
-  'Refining & Processing',
-  'HSE (Health, Safety & Environment)',
-  'IT & Digital Services',
-  'Corporate Strategy',
-  'Finance',
-  'Human Capital',
-];
-
 // Coordinators HR can assign a batch of students to. Real data will come from
 // the staff directory once the sign-up flow feeds a real backend.
 export const COORDINATORS = [

@@ -1,0 +1,54 @@
+.doc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.doc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.doc-chip--disabled {
+  color: var(--text-tertiary);
+  cursor: default;
+}
+
+.doc-chip--clickable {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.doc-chip--clickable:hover {
+  background: var(--surface-selected);
+  color: var(--ink);
+  border-color: var(--border-subtle);
+}
+
+.doc-chip--clickable:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.doc-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-2px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.doc-chip--clickable:hover .doc-chip__icon,
+.doc-chip--clickable:focus-visible .doc-chip__icon {
+  opacity: 1;
+  transform: translateX(0);
+}

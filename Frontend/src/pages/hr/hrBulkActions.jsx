@@ -1,14 +1,15 @@
 import { CardIcon, DepartmentIcon, CertificateIcon } from '../../components/dashboard/trackIcons';
 import { WithdrawIcon } from '../../components/dashboard/navIcons';
+import { isCertificateReady } from '../../data/traineeAdapter';
 
 // Each entry drives one bulk-action page (/app/hr/bulk/:actionType). `apply`
 // calls the exact same per-student function the single-student profile-page
 // action already uses — bulk is that same operation looped across selected
 // trainees, not a reimplementation. `isApplicable`/`skipReason` describe who
 // is eligible: every action requires an accepted (active-trainee) application,
-// and certificate additionally requires training to be complete and not
-// already issued, mirroring the disabled/label logic already on that
-// single-student button.
+// and certificate additionally requires all six prior milestones complete
+// (Fix 2's stated exception — see isCertificateReady) and not already issued,
+// mirroring the disabled/label logic already on that single-student button.
 const HR_BULK_ACTIONS = {
   card: {
     key: 'card',
@@ -57,20 +58,20 @@ const HR_BULK_ACTIONS = {
     key: 'certificate',
     icon: <CertificateIcon />,
     title: 'Issue completion certificate',
-    description: 'Issues the completion certificate for every selected trainee whose training is complete.',
+    description: 'Issues the completion certificate for every selected trainee whose onboarding is fully complete.',
     submitLabel: 'Issue certificates',
     fields: 'none',
     needsConfirm: false,
     danger: false,
     isApplicable: (record) =>
       record.applicationStatus === 'accepted' &&
-      Boolean(record.tracks?.training?.started) &&
-      Boolean(record.tracks?.training?.completed) &&
+      Boolean(record.tracks) &&
+      isCertificateReady(record.tracks) &&
       record.tracks?.certificate?.status !== 'issued',
     skipReason: (record) => {
       if (record.tracks?.certificate?.status === 'issued') return 'Certificate already issued.';
-      if (!record.tracks?.training?.started || !record.tracks?.training?.completed) return 'Training not yet completed.';
-      return 'Application is not an active trainee.';
+      if (record.applicationStatus !== 'accepted') return 'Application is not an active trainee.';
+      return 'Not all onboarding milestones are complete yet (card, department, division, account, desk & device, training).';
     },
     apply: (hrData, record) => hrData.issueCertificate(record.id),
   },

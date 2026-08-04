@@ -8,9 +8,11 @@ import TrackCard from '../../components/dashboard/TrackCard';
 import ConfirmDialog from '../../components/dashboard/ConfirmDialog';
 import EmptyState from '../../components/dashboard/EmptyState';
 import { getTrackSummaries } from '../../components/dashboard/trackSummaries';
+import DocumentChipList from '../../components/dashboard/DocumentChip';
 import Button from '../../components/Button';
 import FormBanner from '../../components/form/FormBanner';
 import { useHRStudentDetail } from '../../data/DataContext';
+import { isCertificateReady } from '../../data/traineeAdapter';
 import { useNow, formatDate } from '../../utils/time';
 import { statusMeta } from '../../utils/statusMeta';
 import HR_NAV_ITEMS from './hrNavItems';
@@ -156,9 +158,9 @@ function HRStudentProfilePage() {
     }
   };
 
-  const trainingStarted = Boolean(record.tracks?.training?.started);
-  const trainingCompleted = Boolean(record.tracks?.training?.completed);
-  const certReady = trainingStarted && trainingCompleted;
+  // Fix 2's exception: certificate issuance requires all six prior milestones actually
+  // complete, not just training — see isCertificateReady's doc comment.
+  const certReady = record.tracks ? isCertificateReady(record.tracks) : false;
   const certIssued = record.tracks?.certificate?.status === 'issued';
 
   return (
@@ -241,7 +243,7 @@ function HRStudentProfilePage() {
                 <p>
                   {certReady
                     ? 'Ready to issue.'
-                    : 'Waiting on coordinator confirmation that training was started and completed.'}
+                    : 'Waiting on all onboarding milestones to complete (card, department, division, account, desk & device, training).'}
                 </p>
                 {certError && <FormBanner tone="error">{certError}</FormBanner>}
                 <Button variant="secondary" size="sm" onClick={handleIssueCertificate} disabled={!certReady || certIssued} loading={certLoading}>
@@ -293,13 +295,11 @@ function HRStudentProfilePage() {
             {record.employeeReferralId && <InfoField label="Referring employee ID" value={record.employeeReferralId} />}
             <InfoField label="IBAN" value={record.iban} />
           </div>
-          <div className="doc-list" style={{ marginTop: 'var(--space-5)' }}>
-            <span className="doc-chip">📄 {record.transcriptFileName}</span>
-            <span className="doc-chip">📄 {record.cvFileName}</span>
-            <span className="doc-chip">📄 {record.universityLetterFileName}</span>
-            <span className="doc-chip">🖼 {record.personalImageFileName}</span>
-            <span className="doc-chip">✍️ {record.signatureFileName}</span>
-          </div>
+          <DocumentChipList
+            className="profile-doc-list"
+            documents={record.documents}
+            buildDownloadPath={(field) => `/api/hr/students/${record.id}/documents/${field}`}
+          />
         </SectionCard>
       </div>
 

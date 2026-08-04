@@ -56,7 +56,7 @@ export function getTrackSummaries(record, now) {
         cardStatus === 'not_requested'
           ? 'Not requested from ISD yet.'
           : cardStatus === 'under_issuing'
-          ? 'Submitted to ISD — usually ready within 2 hours.'
+          ? 'Submitted to ISD.'
           : 'Ready to collect.',
       date: null,
     },

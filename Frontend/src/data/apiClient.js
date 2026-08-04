@@ -29,8 +29,13 @@ function getToken() {
 // Generic JSON request. Throws Error(message) using the backend's own
 // `{ message }` error body when the response isn't ok, so callers can just
 // catch(err) and show err.message the same way the old mock layer worked.
+//
+// FormData bodies (application document uploads, REQ-01) are passed straight to fetch
+// without stringifying and without a Content-Type header — the browser sets
+// multipart/form-data with the correct boundary itself; setting it manually breaks parsing.
 export async function apiRequest(path, { method = 'GET', body, auth = true } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
   if (auth) {
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -41,7 +46,7 @@ export async function apiRequest(path, { method = 'GET', body, auth = true } = {
     response = await fetch(`${API_URL}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
     });
   } catch (networkErr) {
     throw new Error('Could not reach the server. Check your connection and try again.');

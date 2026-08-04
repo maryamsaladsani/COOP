@@ -3,13 +3,15 @@ import SectionCard from '../../components/dashboard/SectionCard';
 import InfoField from '../../components/dashboard/InfoField';
 import EmptyState from '../../components/dashboard/EmptyState';
 import FormBanner from '../../components/form/FormBanner';
+import DocumentChipList from '../../components/dashboard/DocumentChip';
 import TRAINEE_NAV_ITEMS from './TraineeNavItems';
-import { useTraineeData } from '../../data/DataContext';
+import { useTraineeData, useTraineeDocuments } from '../../data/DataContext';
 import './TraineeDashboard.css';
 
 
 function TraineeDetailsPage() {
     const { record, loading, error } = useTraineeData();
+    const { documents, loading: documentsLoading } = useTraineeDocuments();
 
     if (loading) {
         return (
@@ -51,6 +53,16 @@ function TraineeDetailsPage() {
                     </div>
                 </SectionCard>
 
+                <SectionCard title="Your application documents" subtitle="Uploaded when you applied.">
+                    {documentsLoading ? (
+                        <p>Loading…</p>
+                    ) : (
+                        <DocumentChipList
+                            documents={documents || []}
+                            buildDownloadPath={(field) => `/api/trainee/documents/${field}`}
+                        />
+                    )}
+                </SectionCard>
 
             </div>
         </DashboardShell>

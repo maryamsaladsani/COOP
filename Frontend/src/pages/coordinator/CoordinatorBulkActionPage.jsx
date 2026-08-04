@@ -10,7 +10,6 @@ import TextField from '../../components/form/TextField';
 import SelectField from '../../components/form/SelectField';
 import Button from '../../components/Button';
 import { useCoordinatorData } from '../../data/DataContext';
-import { DIVISIONS } from '../../data/mockData';
 import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import BULK_ACTIONS from './bulkActions';
 import './CoordinatorBulkAction.css';
@@ -54,6 +53,15 @@ function CoordinatorBulkActionView({ action }) {
     return students.filter((s) => `${s.firstName} ${s.lastName}`.toLowerCase().includes(term));
   }, [students, search]);
 
+  // Union of divisions across this coordinator's own trainees' departments (Fix: no more
+  // single global list) — naturally scoped to what's actually relevant, since a
+  // coordinator's trainees only ever belong to the department(s) assigned to them.
+  const availableDivisions = useMemo(() => {
+    const names = new Set();
+    students.forEach((s) => (s.tracks?.departmentAssignment?.divisions || []).forEach((d) => names.add(d)));
+    return [...names].sort();
+  }, [students]);
+
   const selectedCount = selectedIds.length;
 
   const columns = [
@@ -74,10 +82,10 @@ function CoordinatorBulkActionView({ action }) {
       key: 'eligibility',
       header: 'Eligibility',
       render: (row) =>
-        action.isApplicable(row) ? (
+        action.isApplicable(row, divisionValues) ? (
           <StatusPill tone="complete" label="Eligible" />
         ) : (
-          <StatusPill tone="neutral" label={`Skip — ${action.skipReason(row)}`} />
+          <StatusPill tone="neutral" label={`Skip — ${action.skipReason(row, divisionValues)}`} />
         ),
     },
   ];
@@ -114,8 +122,8 @@ function CoordinatorBulkActionView({ action }) {
         setResults((prev) => [...prev, { id, name, status: 'error', message: 'Student not found.' }]);
         continue;
       }
-      if (!action.isApplicable(record)) {
-        setResults((prev) => [...prev, { id, name, status: 'skipped', message: action.skipReason(record) }]);
+      if (!action.isApplicable(record, divisionValues)) {
+        setResults((prev) => [...prev, { id, name, status: 'skipped', message: action.skipReason(record, divisionValues) }]);
         continue;
       }
       try {
@@ -172,7 +180,7 @@ function CoordinatorBulkActionView({ action }) {
               selectable
               selectedIds={selectedIds}
               onSelectedChange={setSelectedIds}
-              isRowSelectable={(row) => action.isApplicable(row)}
+              isRowSelectable={(row) => action.isApplicable(row, divisionValues)}
               emptyTitle="No students match this search"
               emptyBody="Try a different search term."
             />
@@ -180,17 +188,28 @@ function CoordinatorBulkActionView({ action }) {
         </SectionCard>
 
         {action.fields === 'division' && (
-          <SectionCard title="Division details" subtitle="Applied to every selected student.">
+          <SectionCard title="Division details" subtitle="Applied to every selected student whose department has this division.">
             <div className="profile-form">
-              <SelectField
-                label="Division"
-                name="division"
-                required
-                placeholder="Select division"
-                options={DIVISIONS.map((d) => ({ value: d, label: d }))}
-                value={divisionValues.division}
-                onChange={(e) => setDivisionValues({ division: e.target.value })}
-              />
+              {availableDivisions.length > 0 ? (
+                <SelectField
+                  label="Division"
+                  name="division"
+                  required
+                  placeholder="Select division"
+                  options={availableDivisions.map((d) => ({ value: d, label: d }))}
+                  value={divisionValues.division}
+                  onChange={(e) => setDivisionValues({ division: e.target.value })}
+                />
+              ) : (
+                <TextField
+                  label="Division"
+                  name="division"
+                  required
+                  hint="None of your trainees' departments have divisions defined yet — enter one manually."
+                  value={divisionValues.division}
+                  onChange={(e) => setDivisionValues({ division: e.target.value })}
+                />
+              )}
             </div>
           </SectionCard>
         )}
