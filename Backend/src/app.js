@@ -17,7 +17,10 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: env.frontendUrl,
+    origin: 'https://coop.maryamaladsani.site',
+    credentials: true, // if you're using cookies/sessions for auth
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
