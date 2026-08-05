@@ -6,6 +6,7 @@ import FormBanner from '../../components/form/FormBanner';
 import DocumentChipList from '../../components/dashboard/DocumentChip';
 import TRAINEE_NAV_ITEMS from './TraineeNavItems';
 import { useTraineeData, useTraineeDocuments } from '../../data/DataContext';
+import { openDocumentInNewTab, downloadDocument } from '../../data/documentActions';
 import './TraineeDashboard.css';
 
 
@@ -59,7 +60,8 @@ function TraineeDetailsPage() {
                     ) : (
                         <DocumentChipList
                             documents={documents || []}
-                            buildDownloadPath={(field) => `/api/trainee/documents/${field}`}
+                            onView={(field) => openDocumentInNewTab(`/api/trainee/documents/${field}`)}
+                            onDownload={(field) => downloadDocument(`/api/trainee/documents/${field}`)}
                         />
                     )}
                 </SectionCard>

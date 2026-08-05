@@ -13,6 +13,7 @@ import SelectField from '../../components/form/SelectField';
 import TextField from '../../components/form/TextField';
 import FormBanner from '../../components/form/FormBanner';
 import { useCoordinatorData } from '../../data/DataContext';
+import { openDocumentInNewTab, downloadDocument } from '../../data/documentActions';
 import { useNow, formatDate } from '../../utils/time';
 import COORDINATOR_NAV_ITEMS from './coordinatorNavItems';
 import '../../components/dashboard/DashboardPage.css';
@@ -218,7 +219,8 @@ function CoordinatorStudentProfilePage() {
         <SectionCard title="Application documents">
           <DocumentChipList
             documents={record.documents}
-            buildDownloadPath={(field) => `/api/coordinator/trainees/${record.id}/documents/${field}`}
+            onView={(field) => openDocumentInNewTab(`/api/coordinator/trainees/${record.id}/documents/${field}`)}
+            onDownload={(field) => downloadDocument(`/api/coordinator/trainees/${record.id}/documents/${field}`)}
           />
         </SectionCard>
       </div>

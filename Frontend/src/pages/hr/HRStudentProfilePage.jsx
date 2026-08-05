@@ -13,6 +13,7 @@ import Button from '../../components/Button';
 import FormBanner from '../../components/form/FormBanner';
 import { useHRStudentDetail } from '../../data/DataContext';
 import { isCertificateReady } from '../../data/traineeAdapter';
+import { openDocumentInNewTab, downloadDocument } from '../../data/documentActions';
 import { useNow, formatDate } from '../../utils/time';
 import { statusMeta } from '../../utils/statusMeta';
 import HR_NAV_ITEMS from './hrNavItems';
@@ -298,7 +299,8 @@ function HRStudentProfilePage() {
           <DocumentChipList
             className="profile-doc-list"
             documents={record.documents}
-            buildDownloadPath={(field) => `/api/hr/students/${record.id}/documents/${field}`}
+            onView={(field) => openDocumentInNewTab(`/api/hr/students/${record.id}/documents/${field}`)}
+            onDownload={(field) => downloadDocument(`/api/hr/students/${record.id}/documents/${field}`)}
           />
         </SectionCard>
       </div>

@@ -8,14 +8,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 var(--space-3);
+  min-height: 30px;
+  padding: 0 var(--space-2) 0 var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--surface-sunken);
   color: var(--text-secondary);
   font-size: 12.5px;
   font-weight: 600;
   border: 1px solid transparent;
+  position: relative;
 }
 
 .doc-chip--disabled {
@@ -23,32 +24,29 @@
   cursor: default;
 }
 
-.doc-chip--clickable {
-  cursor: pointer;
-  font-family: inherit;
+.doc-chip--interactive {
+  flex-wrap: wrap;
 }
 
-.doc-chip--clickable:hover {
-  background: var(--surface-selected);
-  color: var(--ink);
-  border-color: var(--border-subtle);
+.doc-chip__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
 }
 
-.doc-chip--clickable:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-.doc-chip__icon {
+.doc-chip__actions {
   display: inline-flex;
   align-items: center;
-  opacity: 0;
-  transform: translateX(-2px);
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  gap: 2px;
 }
 
-.doc-chip--clickable:hover .doc-chip__icon,
-.doc-chip--clickable:focus-visible .doc-chip__icon {
-  opacity: 1;
-  transform: translateX(0);
+.doc-chip__actions .btn--text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.doc-chip__error {
+  flex-basis: 100%;
+  margin: 2px 0 4px;
 }
