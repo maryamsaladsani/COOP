@@ -3,54 +3,54 @@
     "id": "cmsel4m6c0000vbib8zhi6wva",
     "name": "Enterprise and Business Solutions",
     "coordinatorId": null,
-    "branch": null,
-    "businessLine": null,
-    "buildingNumber": null,
-    "floorNumber": null
+    "branch": "Eastern",
+    "businessLine": "Digital & Technology Business Line",
+    "buildingNumber": "Phase 3",
+    "floorNumber": "1"
   },
   {
     "id": "cmsel4m6j000dvbibhzlen0sk",
     "name": "Reports & Customer Insights Department",
     "coordinatorId": null,
-    "branch": null,
-    "businessLine": null,
-    "buildingNumber": null,
-    "floorNumber": null
+    "branch": "Eastern",
+    "businessLine": "Digital & Technology Business Line",
+    "buildingNumber": "Phase 3",
+    "floorNumber": "1"
   },
   {
     "id": "cmsel4m6k000evbibm8ru8sbw",
     "name": "Business Development Department",
     "coordinatorId": null,
-    "branch": null,
-    "businessLine": null,
-    "buildingNumber": null,
-    "floorNumber": null
+    "branch": "Eastern",
+    "businessLine": "Digital & Technology Business Line",
+    "buildingNumber": "Phase 3",
+    "floorNumber": "1"
   },
   {
     "id": "cmsel4m6l000fvbib1vbm97go",
     "name": "Documentation Department",
     "coordinatorId": null,
-    "branch": null,
-    "businessLine": null,
-    "buildingNumber": null,
-    "floorNumber": null
+    "branch": "Eastern",
+    "businessLine": "Digital & Technology Business Line",
+    "buildingNumber": "Phase 3",
+    "floorNumber": "1"
   },
   {
     "id": "cmsel4m6l000gvbibxqrons1b",
     "name": "Digital Projects Department",
     "coordinatorId": null,
-    "branch": null,
-    "businessLine": null,
-    "buildingNumber": null,
-    "floorNumber": null
+    "branch": "Eastern",
+    "businessLine": "Digital & Technology Business Line",
+    "buildingNumber": "Phase 3",
+    "floorNumber": "1"
   },
   {
     "id": "cmsel4m6m000hvbib5hex5jfc",
     "name": "Data Management Office Department",
     "coordinatorId": null,
-    "branch": null,
-    "businessLine": null,
-    "buildingNumber": null,
-    "floorNumber": null
+    "branch": "Eastern",
+    "businessLine": "Digital & Technology Business Line",
+    "buildingNumber": "Phase 3",
+    "floorNumber": "1"
   }
 ]
