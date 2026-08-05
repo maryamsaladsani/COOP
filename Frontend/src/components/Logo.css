@@ -8,3 +8,12 @@
   display: block;
   width: auto;
 }
+
+/* The inlined <svg> (see Logo.jsx) carries its own width="1200" height="450" attributes —
+   CSS here overrides those so it scales to the .logo__mark container's height instead of
+   rendering at a fixed 1200x450px, same sizing behavior as the <img> fallback above it. */
+.logo__mark svg {
+  display: block;
+  height: 100%;
+  width: auto;
+}
