@@ -10,6 +10,7 @@ const env = require("../config/env");
 const prisma = require("../lib/prisma");
 const resend = require("../lib/resend");
 const asyncHandler = require("../lib/asyncHandler");
+const { buildEmailTemplate } = require("../lib/emailTemplate");
 
 const router = express.Router();
 
@@ -205,11 +206,13 @@ router.post("/password-reset-request", async (req, res) => {
       // API-level failures (e.g. invalid key, unverified domain) — only
       // network-level failures throw. Check both so send failures don't go
       // unnoticed. Either way, the response to the client stays identical.
+      const bodyHtml = `<p>We received a request to reset your COOP password. This link expires in 1 hour.</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you didn't request this, you can safely ignore this email.</p>`;
+
       const { error } = await resend.emails.send({
         from: RESET_EMAIL_SENDER,
         to: user.email,
         subject: "Reset your COOP password",
-        html: `<p>We received a request to reset your COOP password. This link expires in 1 hour.</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you didn't request this, you can safely ignore this email.</p>`,
+        html: buildEmailTemplate(bodyHtml, { previewText: "Reset your COOP password" }),
       });
 
       if (error) {

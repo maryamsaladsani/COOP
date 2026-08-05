@@ -14,6 +14,7 @@ const asyncHandler = require("../lib/asyncHandler");
 const formatDate = require("../lib/formatDate");
 const { isMilestoneBehind } = require("../lib/milestone");
 const { createDocumentSignedUrl } = require("../lib/uploads");
+const { buildEmailTemplate } = require("../lib/emailTemplate");
 
 const router = express.Router();
 
@@ -48,13 +49,16 @@ function toStudentSummary(t) {
   };
 }
 
+// `html` here is just the body content for the email type (see sendAcceptanceEmails/
+// sendRejectionEmail/sendWithdrawalEmail below) — buildEmailTemplate() wraps it with the
+// shared branded header/footer once, here, so none of those call sites duplicate that markup.
 async function sendEmail({ to, subject, html }, logContext) {
   try {
     const { error } = await resend.emails.send({
       from: EMAIL_SENDER,
       to,
       subject,
-      html,
+      html: buildEmailTemplate(html),
     });
 
     if (error) {
