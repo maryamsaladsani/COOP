@@ -6,7 +6,15 @@
     "branch": "Eastern",
     "businessLine": "Digital & Technology Business Line",
     "buildingNumber": "Phase 3",
-    "floorNumber": "1"
+    "floorNumber": "1",
+    "divisions": [
+      "Enterprise Resource Solution Division",
+      "Billing and Customer Relation Solution Division",
+      "ERP Technical Application Support Division",
+      "Document and Archives Division",
+      "GIS Division",
+      "Assets Maintenance Solutions Division"
+    ]
   },
   {
     "id": "cmsel4m6j000dvbibhzlen0sk",
@@ -15,7 +23,8 @@
     "branch": "Eastern",
     "businessLine": "Digital & Technology Business Line",
     "buildingNumber": "Phase 3",
-    "floorNumber": "1"
+    "floorNumber": "1",
+    "divisions": []
   },
   {
     "id": "cmsel4m6k000evbibm8ru8sbw",
@@ -24,7 +33,8 @@
     "branch": "Eastern",
     "businessLine": "Digital & Technology Business Line",
     "buildingNumber": "Phase 3",
-    "floorNumber": "1"
+    "floorNumber": "1",
+    "divisions": []
   },
   {
     "id": "cmsel4m6l000fvbib1vbm97go",
@@ -33,7 +43,8 @@
     "branch": "Eastern",
     "businessLine": "Digital & Technology Business Line",
     "buildingNumber": "Phase 3",
-    "floorNumber": "1"
+    "floorNumber": "1",
+    "divisions": []
   },
   {
     "id": "cmsel4m6l000gvbibxqrons1b",
@@ -42,7 +53,8 @@
     "branch": "Eastern",
     "businessLine": "Digital & Technology Business Line",
     "buildingNumber": "Phase 3",
-    "floorNumber": "1"
+    "floorNumber": "1",
+    "divisions": []
   },
   {
     "id": "cmsel4m6m000hvbib5hex5jfc",
@@ -51,6 +63,7 @@
     "branch": "Eastern",
     "businessLine": "Digital & Technology Business Line",
     "buildingNumber": "Phase 3",
-    "floorNumber": "1"
+    "floorNumber": "1",
+    "divisions": []
   }
 ]

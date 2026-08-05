@@ -13,8 +13,9 @@ const express = require("express");
 const { requireAuth } = require("../middleware/auth");
 const { roleGuard } = require("../middleware/roleGuard");
 const prisma = require("../lib/prisma");
+const asyncHandler = require("../lib/asyncHandler");
 const { isMilestoneBehind } = require("../lib/milestone");
-const { resolveDocument } = require("../lib/uploads");
+const { createDocumentSignedUrl } = require("../lib/uploads");
 
 const router = express.Router();
 
@@ -79,22 +80,34 @@ router.get("/trainees/:id", async (req, res) => {
   res.status(200).json({ trainee });
 });
 
-// --- REQ-01: download an application document — scoped to this coordinator's own trainees
-router.get("/trainees/:id/documents/:field", async (req, res) => {
-  const trainee = await loadOwnedTrainee(req, res);
-  if (!trainee) return;
+// --- REQ-01: application document URL — scoped to this coordinator's own trainees --------
+// Same Supabase signed-URL contract as hr.js's equivalent route (BUG-001 fix): view at
+// GET .../documents/:field, download at GET .../documents/:field?download=true. Wrapped in
+// asyncHandler deliberately — this file's other routes aren't, but an uncaught error here
+// previously took the whole process down (see /BUGS.md).
+router.get(
+  "/trainees/:id/documents/:field",
+  asyncHandler(async (req, res) => {
+    const trainee = await loadOwnedTrainee(req, res);
+    if (!trainee) return;
 
-  const document = resolveDocument(trainee, req.params.field);
-  if (!document) {
-    return res.status(404).json({ message: "Document not found" });
-  }
+    const wantsDownload = req.query.download === "true";
+    const document = await createDocumentSignedUrl(trainee, req.params.field, 300, wantsDownload);
 
-  res.download(document.absolutePath, document.originalName, (err) => {
-    if (err && !res.headersSent) {
-      res.status(404).json({ message: "Document file is missing from storage" });
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
     }
-  });
-});
+
+    res.status(200).json({
+      document: {
+        url: document.url,
+        originalName: document.originalName,
+        mode: wantsDownload ? "download" : "view",
+        expiresInSeconds: 300,
+      },
+    });
+  })
+);
 
 // --- REQ-11: division assignment — independent action, gated only on contractSigned ------
 router.patch("/trainees/:id/division", async (req, res) => {

@@ -11,7 +11,7 @@ const prisma = require("../lib/prisma");
 const asyncHandler = require("../lib/asyncHandler");
 const formatDate = require("../lib/formatDate");
 const { MILESTONE_ORDER } = require("../lib/milestone");
-const { DOCUMENT_FIELDS, resolveDocument } = require("../lib/uploads");
+const { DOCUMENT_FIELDS, createDocumentSignedUrl } = require("../lib/uploads");
 
 const router = express.Router();
 
@@ -69,6 +69,9 @@ router.get(
       milestone: trainee.milestone,
       roadmap,
       withdrawn: trainee.withdrawn,
+      // BUG-003: real column, just never threaded through before — the Acceptance step's
+      // "Accepted on {date}" caption needs this to not fall back to a bare "—".
+      acceptedAt: trainee.acceptedAt,
       cardStatus: trainee.cardStatus,
       cardRequestedAt: trainee.cardRequestedAt,
       cardIssuedAt: trainee.cardIssuedAt,
@@ -99,40 +102,54 @@ router.get(
   })
 );
 
-// --- REQ-01: download one of this trainee's own application documents ---------------------
+// --- REQ-01: one of this trainee's own application documents — same Supabase signed-URL
+// contract as hr.js's/coordinator.js's equivalent routes (BUG-001 fix): view at
+// GET .../documents/:field, download at GET .../documents/:field?download=true.
 router.get(
   "/documents/:field",
   asyncHandler(async (req, res) => {
     const trainee = await loadOwnTrainee(req, res);
     if (!trainee) return;
 
-    const document = resolveDocument(trainee, req.params.field);
+    const wantsDownload = req.query.download === "true";
+    const document = await createDocumentSignedUrl(trainee, req.params.field, 300, wantsDownload);
+
     if (!document) {
       return res.status(404).json({ message: "Document not found" });
     }
 
-    res.download(document.absolutePath, document.originalName, (err) => {
-      if (err && !res.headersSent) {
-        res.status(404).json({ message: "Document file is missing from storage" });
-      }
+    res.status(200).json({
+      document: {
+        url: document.url,
+        originalName: document.originalName,
+        mode: wantsDownload ? "download" : "view",
+        expiresInSeconds: 300,
+      },
     });
   })
 );
 
-// --- REQ-05: training details, only once coordinatorId + division are both set ------------
+// --- REQ-05: training details, available as soon as a department is assigned --------------
+// BUG-004 fix: this used to also require `division` before returning anything at all, which
+// made the Trainee dashboard's Department Assignment step look unassigned until the
+// Coordinator separately set a division — even though departmentId/coordinatorId are set
+// together, atomically, by HR's assign-department action. coordinatorId is guarded
+// defensively below even though it's always set alongside departmentId in practice;
+// division/coordinatorName individually degrade to null in the response if not set yet,
+// which the frontend already renders as "pending" rather than crashing.
 router.get(
   "/training-details",
   asyncHandler(async (req, res) => {
     const trainee = await loadOwnTrainee(req, res);
     if (!trainee) return;
 
-    if (!trainee.coordinatorId || !trainee.division) {
+    if (!trainee.departmentId) {
       return res.status(200).json({ available: false, message: "Training details are not available yet." });
     }
 
     const [coordinator, department] = await Promise.all([
-      prisma.user.findUnique({ where: { id: trainee.coordinatorId } }),
-      trainee.departmentId ? prisma.department.findUnique({ where: { id: trainee.departmentId } }) : null,
+      trainee.coordinatorId ? prisma.user.findUnique({ where: { id: trainee.coordinatorId } }) : null,
+      prisma.department.findUnique({ where: { id: trainee.departmentId } }),
     ]);
 
     res.status(200).json({

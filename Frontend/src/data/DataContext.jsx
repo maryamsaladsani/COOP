@@ -382,6 +382,9 @@ export function useTraineeData() {
       applicationStatus: 'ACCEPTED',
       withdrawn: Boolean(status.withdrawn),
       milestone,
+      // BUG-003: feeds traineeAdapter.js's decisionAt -> trackSummaries.js's "Accepted on
+      // {date}" caption. Was missing entirely, so it always fell back to "Accepted on —.".
+      acceptedAt: status.acceptedAt,
       cardStatus: status.cardStatus,
       cardRequestedAt: status.cardRequestedAt,
       cardIssuedAt: status.cardIssuedAt,
