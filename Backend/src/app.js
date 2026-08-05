@@ -11,6 +11,7 @@ const traineeRoutes = require("./routes/trainee");
 const hrRoutes = require("./routes/hr");
 const coordinatorRoutes = require("./routes/coordinator");
 
+
 const app = express();
 
 app.use(express.json());
